@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!-- saved from url=(0052)file:///C:/Users/Luna/Downloads/mood-diary-v2_1.html -->
-<html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="心情日記">
@@ -496,11 +496,11 @@ body {
     <div class="header-top">
       <div>
         <div class="header-title">心情日記</div>
-        <div class="header-date" id="headerDate">2026年4月16日 星期四</div>
+        <div class="header-date" id="headerDate"></div>
       </div>
       <div class="header-actions">
         <button class="icon-btn" onclick="showSearch()" title="搜尋">🔍</button>
-        <button class="icon-btn" onclick="switchPage(&#39;export&#39;)" title="匯出">⬇</button>
+        <button class="icon-btn" onclick="switchPage('export')" title="匯出">⬇</button>
       </div>
     </div>
   </div>
@@ -520,16 +520,16 @@ body {
     <div class="mood-section">
       <div class="section-label">今天的心情</div>
       <div class="mood-grid" id="moodGrid">
-        <button class="mood-btn" data-mood="🥰" onclick="selectMood(&#39;🥰&#39;)">🥰<span>幸福</span></button>
-        <button class="mood-btn" data-mood="🤩" onclick="selectMood(&#39;🤩&#39;)">🤩<span>興奮</span></button>
-        <button class="mood-btn" data-mood="😊" onclick="selectMood(&#39;😊&#39;)">😊<span>開心</span></button>
-        <button class="mood-btn" data-mood="😌" onclick="selectMood(&#39;😌&#39;)">😌<span>平靜</span></button>
-        <button class="mood-btn" data-mood="😐" onclick="selectMood(&#39;😐&#39;)">😐<span>普通</span></button>
-        <button class="mood-btn" data-mood="😴" onclick="selectMood(&#39;😴&#39;)">😴<span>疲倦</span></button>
-        <button class="mood-btn" data-mood="😔" onclick="selectMood(&#39;😔&#39;)">😔<span>低落</span></button>
-        <button class="mood-btn" data-mood="😢" onclick="selectMood(&#39;😢&#39;)">😢<span>難過</span></button>
-        <button class="mood-btn" data-mood="😰" onclick="selectMood(&#39;😰&#39;)">😰<span>焦慮</span></button>
-        <button class="mood-btn" data-mood="😤" onclick="selectMood(&#39;😤&#39;)">😤<span>煩躁</span></button>
+        <button class="mood-btn" data-mood="🥰" onclick="selectMood('🥰')">🥰<span>幸福</span></button>
+        <button class="mood-btn" data-mood="🤩" onclick="selectMood('🤩')">🤩<span>興奮</span></button>
+        <button class="mood-btn" data-mood="😊" onclick="selectMood('😊')">😊<span>開心</span></button>
+        <button class="mood-btn" data-mood="😌" onclick="selectMood('😌')">😌<span>平靜</span></button>
+        <button class="mood-btn" data-mood="😐" onclick="selectMood('😐')">😐<span>普通</span></button>
+        <button class="mood-btn" data-mood="😴" onclick="selectMood('😴')">😴<span>疲倦</span></button>
+        <button class="mood-btn" data-mood="😔" onclick="selectMood('😔')">😔<span>低落</span></button>
+        <button class="mood-btn" data-mood="😢" onclick="selectMood('😢')">😢<span>難過</span></button>
+        <button class="mood-btn" data-mood="😰" onclick="selectMood('😰')">😰<span>焦慮</span></button>
+        <button class="mood-btn" data-mood="😤" onclick="selectMood('😤')">😤<span>煩躁</span></button>
       </div>
     </div>
 
@@ -537,7 +537,7 @@ body {
       <div class="section-label">能量值</div>
       <div class="energy-row">
         <span class="energy-label-sm">🔋低</span>
-        <input type="range" class="energy-slider" id="energySlider" min="0" max="100" value="50" oninput="updateEnergySlider(this)" style="--val: 50%;">
+        <input type="range" class="energy-slider" id="energySlider" min="0" max="100" value="50" oninput="updateEnergySlider(this)">
         <span class="energy-label-sm">⚡高</span>
         <span id="energyVal" style="font-size:0.72rem;color:var(--accent);min-width:28px;text-align:right;">50</span>
       </div>
@@ -546,31 +546,31 @@ body {
     <div class="weather-section">
       <div class="section-label">天氣</div>
       <div class="weather-row" id="weatherRow">
-        <button class="weather-btn" data-weather="☀️" onclick="selectWeather(&#39;☀️&#39;)">☀️ 晴</button>
-        <button class="weather-btn" data-weather="⛅" onclick="selectWeather(&#39;⛅&#39;)">⛅ 多雲</button>
-        <button class="weather-btn" data-weather="🌧" onclick="selectWeather(&#39;🌧&#39;)">🌧 雨</button>
-        <button class="weather-btn" data-weather="🌩" onclick="selectWeather(&#39;🌩&#39;)">🌩 雷雨</button>
-        <button class="weather-btn" data-weather="🌫" onclick="selectWeather(&#39;🌫&#39;)">🌫 霧</button>
-        <button class="weather-btn" data-weather="❄️" onclick="selectWeather(&#39;❄️&#39;)">❄️ 冷</button>
+        <button class="weather-btn" data-weather="☀️" onclick="selectWeather('☀️')">☀️ 晴</button>
+        <button class="weather-btn" data-weather="⛅" onclick="selectWeather('⛅')">⛅ 多雲</button>
+        <button class="weather-btn" data-weather="🌧" onclick="selectWeather('🌧')">🌧 雨</button>
+        <button class="weather-btn" data-weather="🌩" onclick="selectWeather('🌩')">🌩 雷雨</button>
+        <button class="weather-btn" data-weather="🌫" onclick="selectWeather('🌫')">🌫 霧</button>
+        <button class="weather-btn" data-weather="❄️" onclick="selectWeather('❄️')">❄️ 冷</button>
       </div>
     </div>
 
     <div class="tags-section">
       <div class="section-label">標籤</div>
       <div class="common-tags" id="commonTags">
-        <button class="common-tag" onclick="addTag(&#39;#工作&#39;)">＋工作</button>
-        <button class="common-tag" onclick="addTag(&#39;#感情&#39;)">＋感情</button>
-        <button class="common-tag" onclick="addTag(&#39;#家庭&#39;)">＋家庭</button>
-        <button class="common-tag" onclick="addTag(&#39;#健康&#39;)">＋健康</button>
-        <button class="common-tag" onclick="addTag(&#39;#寫作&#39;)">＋寫作</button>
-        <button class="common-tag" onclick="addTag(&#39;#閱讀&#39;)">＋閱讀</button>
-        <button class="common-tag" onclick="addTag(&#39;#旅行&#39;)">＋旅行</button>
-        <button class="common-tag" onclick="addTag(&#39;#朋友&#39;)">＋朋友</button>
-        <button class="common-tag" onclick="addTag(&#39;#美食&#39;)">＋美食</button>
-        <button class="common-tag" onclick="addTag(&#39;#反思&#39;)">＋反思</button>
+        <button class="common-tag" onclick="addTag('#工作')">＋工作</button>
+        <button class="common-tag" onclick="addTag('#感情')">＋感情</button>
+        <button class="common-tag" onclick="addTag('#家庭')">＋家庭</button>
+        <button class="common-tag" onclick="addTag('#健康')">＋健康</button>
+        <button class="common-tag" onclick="addTag('#寫作')">＋寫作</button>
+        <button class="common-tag" onclick="addTag('#閱讀')">＋閱讀</button>
+        <button class="common-tag" onclick="addTag('#旅行')">＋旅行</button>
+        <button class="common-tag" onclick="addTag('#朋友')">＋朋友</button>
+        <button class="common-tag" onclick="addTag('#美食')">＋美食</button>
+        <button class="common-tag" onclick="addTag('#反思')">＋反思</button>
       </div>
       <div class="tags-input-row">
-        <input type="text" class="tag-input" id="tagInput" placeholder="自訂標籤（不含＃）" onkeydown="if(event.key===&#39;Enter&#39;){addTagFromInput();}">
+        <input type="text" class="tag-input" id="tagInput" placeholder="自訂標籤（不含＃）" onkeydown="if(event.key==='Enter'){addTagFromInput();}">
         <button class="tag-add-btn" onclick="addTagFromInput()">＋</button>
       </div>
       <div class="selected-tags" id="selectedTags"></div>
@@ -594,75 +594,40 @@ body {
   <div class="page" id="page-review">
     <div class="month-nav">
       <button class="month-arrow" onclick="changeMonth(-1)">‹</button>
-      <div class="month-title" id="reviewMonthTitle">2026 四月</div>
+      <div class="month-title" id="reviewMonthTitle"></div>
       <button class="month-arrow" onclick="changeMonth(1)">›</button>
     </div>
 
-    <div class="calendar" id="calendarGrid"><div class="cal-weekdays"><div class="cal-day-label">日</div><div class="cal-day-label">一</div><div class="cal-day-label">二</div><div class="cal-day-label">三</div><div class="cal-day-label">四</div><div class="cal-day-label">五</div><div class="cal-day-label">六</div></div><div class="cal-grid"><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell" onclick="selectDay(&#39;2026-04-01&#39;)">1</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-02&#39;)">2</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-03&#39;)">3</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-04&#39;)">4</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-05&#39;)">5</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-06&#39;)">6</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-07&#39;)">7</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-08&#39;)">8</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-09&#39;)">9</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-10&#39;)">10</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-11&#39;)">11</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-12&#39;)">12</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-13&#39;)">13</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-14&#39;)">14</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-15&#39;)">15</div><div class="cal-cell today" onclick="selectDay(&#39;2026-04-16&#39;)">16</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-17&#39;)">17</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-18&#39;)">18</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-19&#39;)">19</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-20&#39;)">20</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-21&#39;)">21</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-22&#39;)">22</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-23&#39;)">23</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-24&#39;)">24</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-25&#39;)">25</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-26&#39;)">26</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-27&#39;)">27</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-28&#39;)">28</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-29&#39;)">29</div><div class="cal-cell" onclick="selectDay(&#39;2026-04-30&#39;)">30</div></div></div>
+    <div class="calendar" id="calendarGrid"></div>
     <hr class="divider">
-    <div id="reviewEntries"><div class="empty-state"><div class="empty-icon">📭</div>本月還沒有記錄</div></div>
+    <div id="reviewEntries"></div>
   </div>
 
   <!-- Stats Page -->
   <div class="page" id="page-stats">
     <div class="stats-section">
       <div class="stats-title">本月統計</div>
-      <div class="stat-cards" id="statCards">
-    <div class="stat-card"><div class="stat-card-num">0</div><div class="stat-card-label">本月記錄天數</div></div>
-    <div class="stat-card"><div class="stat-card-num">0%</div><div class="stat-card-label">記錄率</div></div>
-    <div class="stat-card"><div class="stat-card-num">0</div><div class="stat-card-label">平均能量值</div></div>
-    <div class="stat-card"><div class="stat-card-num">—</div><div class="stat-card-label">最常出現心情</div></div>
-  </div>
+      <div class="stat-cards" id="statCards"></div>
 
       <div class="section-label" style="margin-bottom:10px;">心情分布</div>
-      <div class="mood-chart" id="moodChart"><div class="mood-bar-wrap">
-      <div class="mood-bar-fill" style="height:0px;background:#d4789a" data-count="0次"></div>
-      <div class="mood-bar-emoji">🥰</div>
-    </div><div class="mood-bar-wrap">
-      <div class="mood-bar-fill" style="height:0px;background:#e8a030" data-count="0次"></div>
-      <div class="mood-bar-emoji">🤩</div>
-    </div><div class="mood-bar-wrap">
-      <div class="mood-bar-fill" style="height:0px;background:#f4b942" data-count="0次"></div>
-      <div class="mood-bar-emoji">😊</div>
-    </div><div class="mood-bar-wrap">
-      <div class="mood-bar-fill" style="height:0px;background:#5d8a5e" data-count="0次"></div>
-      <div class="mood-bar-emoji">😌</div>
-    </div><div class="mood-bar-wrap">
-      <div class="mood-bar-fill" style="height:0px;background:#9a8e7a" data-count="0次"></div>
-      <div class="mood-bar-emoji">😐</div>
-    </div><div class="mood-bar-wrap">
-      <div class="mood-bar-fill" style="height:0px;background:#b89a72" data-count="0次"></div>
-      <div class="mood-bar-emoji">😴</div>
-    </div><div class="mood-bar-wrap">
-      <div class="mood-bar-fill" style="height:0px;background:#4a7c9e" data-count="0次"></div>
-      <div class="mood-bar-emoji">😔</div>
-    </div><div class="mood-bar-wrap">
-      <div class="mood-bar-fill" style="height:0px;background:#7090b0" data-count="0次"></div>
-      <div class="mood-bar-emoji">😢</div>
-    </div><div class="mood-bar-wrap">
-      <div class="mood-bar-fill" style="height:0px;background:#8b6f47" data-count="0次"></div>
-      <div class="mood-bar-emoji">😰</div>
-    </div><div class="mood-bar-wrap">
-      <div class="mood-bar-fill" style="height:0px;background:#c0392b" data-count="0次"></div>
-      <div class="mood-bar-emoji">😤</div>
-    </div></div>
+      <div class="mood-chart" id="moodChart"></div>
 
       <div class="section-label" style="margin:14px 0 8px;">常用標籤</div>
-      <div class="tag-cloud" id="tagCloud"><span style="color:var(--ink3);font-size:0.78rem;font-style:italic;">本月尚無標籤</span></div>
+      <div class="tag-cloud" id="tagCloud"></div>
     </div>
 
     <hr class="divider">
 
     <div class="stats-section">
       <div class="stats-title">每週回顧</div>
-      <div id="weeklyReview"><div class="empty-state"><div class="empty-icon">📖</div>本月尚無記錄</div></div>
+      <div id="weeklyReview"></div>
     </div>
 
     <hr class="divider">
 
     <div class="stats-section">
       <div class="stats-title">每月回顧</div>
-      <div id="monthlyReview"><div class="empty-state"><div class="empty-icon">📖</div>尚無歷史記錄</div></div>
+      <div id="monthlyReview"></div>
     </div>
   </div>
 
@@ -681,7 +646,7 @@ body {
     <div class="export-card">
       <div class="export-card-title">⬆️ 匯入備份</div>
       <div class="export-card-desc">將之前匯出的 JSON 備份檔重新匯入。注意：這會合併資料，不會刪除現有記錄。</div>
-      <button class="export-btn" onclick="document.getElementById(&#39;importFile&#39;).click()">選擇檔案</button>
+      <button class="export-btn" onclick="document.getElementById('importFile').click()">選擇檔案</button>
       <input type="file" id="importFile" accept=".json" onchange="importJSON(event)" class="import-file">
     </div>
     <div class="export-card">
@@ -695,21 +660,21 @@ body {
 
 <!-- Bottom Nav -->
 <div class="bottom-nav">
-  <button class="bottom-nav-btn active" id="nav-write" onclick="switchPage(&#39;write&#39;)">✏️<span>記錄</span></button>
-  <button class="bottom-nav-btn" id="nav-review" onclick="switchPage(&#39;review&#39;)">📅<span>回顧</span></button>
-  <button class="bottom-nav-btn" id="nav-stats" onclick="switchPage(&#39;stats&#39;)">📊<span>統計</span></button>
-  <button class="bottom-nav-btn" id="nav-export" onclick="switchPage(&#39;export&#39;)">⬇<span>匯出</span></button>
+  <button class="bottom-nav-btn active" id="nav-write" onclick="switchPage('write')">✏️<span>記錄</span></button>
+  <button class="bottom-nav-btn" id="nav-review" onclick="switchPage('review')">📅<span>回顧</span></button>
+  <button class="bottom-nav-btn" id="nav-stats" onclick="switchPage('stats')">📊<span>統計</span></button>
+  <button class="bottom-nav-btn" id="nav-export" onclick="switchPage('export')">⬇<span>匯出</span></button>
 </div>
 
 <!-- Toast -->
-<div class="toast" id="toast">載入中…</div>
+<div class="toast" id="toast"></div>
 
 <!-- Search Modal -->
-<div id="searchModal" style="display:none;position:fixed;inset:0;background:rgba(44,36,22,0.5);z-index:200;" onclick="if(event.target===this)this.style.display=&#39;none&#39;">
+<div id="searchModal" style="display:none;position:fixed;inset:0;background:rgba(44,36,22,0.5);z-index:200;" onclick="if(event.target===this)this.style.display='none'">
   <div style="background:var(--paper);margin:60px 16px 16px;border-radius:6px;padding:16px;max-height:80vh;overflow-y:auto;">
     <div style="display:flex;gap:8px;margin-bottom:12px;">
-      <input type="text" id="searchInput" placeholder="搜尋關鍵字或 #標籤" style="flex:1;border:1px solid var(--ink4);background:var(--paper2);font-family:&#39;Noto Serif TC&#39;,serif;font-size:0.85rem;padding:7px 10px;border-radius:var(--radius);color:var(--ink);" oninput="doSearch()">
-      <button onclick="document.getElementById(&#39;searchModal&#39;).style.display=&#39;none&#39;" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink3);">✕</button>
+      <input type="text" id="searchInput" placeholder="搜尋關鍵字或 #標籤" style="flex:1;border:1px solid var(--ink4);background:var(--paper2);font-family:'Noto Serif TC',serif;font-size:0.85rem;padding:7px 10px;border-radius:var(--radius);color:var(--ink);" oninput="doSearch()">
+      <button onclick="document.getElementById('searchModal').style.display='none'" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink3);">✕</button>
     </div>
     <div id="searchResults"></div>
   </div>
@@ -720,7 +685,7 @@ body {
 const API_URL = 'https://script.google.com/macros/s/AKfycbzJg5PyxdzMFZ9D3m1_Af2ntY-H7pYBzQ6VYDpbyejG5BX5Ok1QLc_qDnrVWo0410eGJA/exec';
 
 // ── State ──
-let currentMood = '';
+let currentMood = []; // 複選
 let currentWeather = '';
 let currentTags = [];
 let reviewYear = new Date().getFullYear();
@@ -805,8 +770,12 @@ function switchPage(name) {
 
 // ── Mood / Weather / Tags ──
 function selectMood(m) {
-  currentMood = m;
-  document.querySelectorAll('.mood-btn').forEach(b => b.classList.toggle('selected', b.dataset.mood === m));
+  if (currentMood.includes(m)) {
+    currentMood = currentMood.filter(x => x !== m);
+  } else {
+    currentMood.push(m);
+  }
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.toggle('selected', currentMood.includes(b.dataset.mood)));
 }
 function selectWeather(w) {
   currentWeather = w;
@@ -846,12 +815,12 @@ function updateCharCount() {
 async function saveEntry() {
   const dateStr = document.getElementById('writeDate').value;
   const text = document.getElementById('diaryText').value.trim();
-  if (!currentMood) { showToast('請選擇今天的心情 ✨'); return; }
+  if (!currentMood.length) { showToast('請選擇今天的心情 ✨'); return; }
   if (!text) { showToast('寫點什麼吧 📝'); return; }
 
   const entry = {
     date: dateStr,
-    mood: currentMood,
+    mood: currentMood.join(','), // 複選用逗號分隔存
     energy: parseInt(document.getElementById('energySlider').value),
     weather: currentWeather,
     tags: [...currentTags],
@@ -873,7 +842,7 @@ async function saveEntry() {
   }
 
   // reset
-  currentMood = ''; currentWeather = ''; currentTags = [];
+  currentMood = []; currentWeather = ''; currentTags = [];
   document.querySelectorAll('.mood-btn, .weather-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('diaryText').value = '';
   document.getElementById('gratitudeText').value = '';
@@ -913,7 +882,10 @@ function renderCalendar() {
     const entry = entries[ds];
     const isToday = ds === today;
     let cls = 'cal-cell';
-    if (entry) { cls += ' has-entry mood-dot-' + entry.mood; }
+    if (entry) {
+      const firstMood = entry.mood ? entry.mood.split(',')[0] : '';
+      cls += ' has-entry mood-dot-' + firstMood;
+    }
     if (isToday) cls += ' today';
     html += `<div class="${cls}" onclick="selectDay('${ds}')">${d}</div>`;
   }
@@ -943,11 +915,13 @@ function renderMonthEntries() {
 }
 function renderEntryCard(ds, e) {
   const tagsHtml = (e.tags||[]).map(t => `<span class="entry-tag">${t}</span>`).join('');
-  const short = e.text.length > 120;
+  const short = e.text && e.text.length > 120;
   const id = 'et_' + ds.replace(/-/g,'');
+  // mood 支援複選（逗號分隔）
+  const moodEmojis = e.mood ? e.mood.split(',').join(' ') : '';
   return `<div class="entry-card">
     <div class="entry-meta">
-      <span class="entry-mood-badge">${e.mood||''}</span>
+      <span class="entry-mood-badge" style="font-size:1.2rem;letter-spacing:2px;">${moodEmojis}</span>
       <span class="entry-date-str">${ds}</span>
       ${e.energy!==undefined?`<div class="entry-energy-bar"><div class="entry-energy-fill" style="width:${e.energy}%"></div></div>`:'' }
       ${e.weather?`<span class="entry-weather">${e.weather}</span>`:''}
@@ -973,7 +947,10 @@ function editEntry(ds) {
   if (!e) return;
   switchPage('write');
   document.getElementById('writeDate').value = ds;
-  selectMood(e.mood || '');
+  // mood 載回陣列
+  const moodArr = e.mood ? e.mood.split(',') : [];
+  currentMood = moodArr;
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.toggle('selected', currentMood.includes(b.dataset.mood)));
   if (e.weather) selectWeather(e.weather);
   document.getElementById('energySlider').value = e.energy || 50;
   updateEnergySlider(document.getElementById('energySlider'));
@@ -1015,7 +992,7 @@ function renderStats() {
   let totalEnergy = 0, moodCounts = {}, allTags = {};
   monthEntries.forEach(([_, e]) => {
     totalEnergy += e.energy || 50;
-    if (e.mood) moodCounts[e.mood] = (moodCounts[e.mood]||0)+1;
+    if (e.mood) e.mood.split(',').forEach(m => { moodCounts[m] = (moodCounts[m]||0)+1; });
     (e.tags||[]).forEach(t => allTags[t] = (allTags[t]||0)+1);
   });
   const avgEnergy = recorded ? Math.round(totalEnergy/recorded) : 0;
@@ -1200,6 +1177,5 @@ function doSearch() {
   document.getElementById('searchResults').innerHTML = results.map(([ds, e]) => renderEntryCard(ds, e)).join('');
 }
 </script>
-
-
-</body></html>
+</body>
+</html>
