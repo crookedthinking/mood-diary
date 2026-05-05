@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="心情日記">
+<title>心情日記</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+
+:root {
+  --paper: #f5f0e8;
+  --paper2: #ede8db;
+  --paper3: #e3ddd0;
+  --ink: #2c2416;
+  --ink2: #5a5040;
+  --ink3: #9a8e7a;
+  --ink4: #c4b9a4;
+  --accent: #8b6f47;
+  --accent2: #b89a72;
+  --accent-light: #d4b896;
+  --red: #c0392b;
+  --green: #5d8a5e;
+  --blue: #4a7c9e;
+  --gold: #c9962a;
+  --radius: 4px;
+  --shadow: 0 2px 12px rgba(44,36,22,0.10);
+  --shadow-lg: 0 6px 30px rgba(44,36,22,0.15);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Noto Serif TC', serif;
+  background: var(--paper2);
+  color: var(--ink);
+  min-height: 100vh;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ── Layout ── */
+.app { max-width: 640px; margin: 0 auto; padding: 0 0 80px; }
+
+/* ── Header ── */
+.header {
+  padding: 28px 20px 16px;
+  border-bottom: 1px solid var(--ink4);
+  position: relative;
+}
+.header::after {
+  content: '';
+  display: block;
+  height: 1px;
+  background: var(--ink4);
+  margin-top: 3px;
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; }
+.header-title {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 1.5rem;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.header-date { font-size: 0.72rem; color: var(--ink3); letter-spacing: 0.08em; margin-top: 2px; }
+.header-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--ink4);
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem;
+  color: var(--ink2);
+  transition: all 0.2s;
+}
+.icon-btn:hover { background: var(--paper3); border-color: var(--accent2); color: var(--accent); }
+
+/* ── Nav ── */
+.nav {
+  display: flex;
+  gap: 0;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--ink4);
+  background: var(--paper);
+}
+.nav-btn {
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 0.78rem;
+  color: var(--ink3);
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.2s;
+}
+.nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.nav-btn:hover:not(.active) { color: var(--ink2); }
+
+/* ── Pages ── */
+.page { display: none; padding: 20px; }
+.page.active { display: block; }
+
+/* ── Write Page ── */
+.write-header { margin-bottom: 20px; }
+.date-selector {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px;
+}
+.date-label { font-size: 0.72rem; color: var(--ink3); letter-spacing: 0.08em; text-transform: uppercase; }
+.date-input {
+  border: none;
+  border-bottom: 1px solid var(--ink4);
+  background: transparent;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 0.85rem;
+  color: var(--ink);
+  padding: 2px 4px;
+  cursor: pointer;
+}
+.date-input:focus { outline: none; border-bottom-color: var(--accent); }
+
+.mood-section { margin-bottom: 20px; }
+.section-label { font-size: 0.72rem; color: var(--ink3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+.mood-grid {
+  display: grid; grid-template-columns: repeat(5,1fr); gap: 6px;
+}
+.mood-btn {
+  padding: 8px 4px;
+  border: 1px solid var(--ink4);
+  background: var(--paper);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.mood-btn span { display: block; font-size: 0.58rem; color: var(--ink3); margin-top: 3px; }
+.mood-btn:hover { border-color: var(--accent2); background: var(--paper3); }
+.mood-btn.selected { border-color: var(--accent); background: var(--paper3); box-shadow: inset 0 0 0 1px var(--accent); }
+
+.energy-section { margin-bottom: 20px; }
+.energy-row { display: flex; align-items: center; gap: 10px; }
+.energy-label-sm { font-size: 0.65rem; color: var(--ink3); }
+.energy-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 2px;
+  background: linear-gradient(to right, var(--accent) 0%, var(--accent) var(--val, 50%), var(--ink4) var(--val, 50%));
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.energy-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--paper);
+  box-shadow: 0 0 0 1px var(--accent);
+  cursor: pointer;
+}
+
+.tags-section { margin-bottom: 20px; }
+.tags-input-row { display: flex; gap: 6px; margin-bottom: 8px; }
+.tag-input {
+  flex: 1;
+  border: 1px solid var(--ink4);
+  background: var(--paper);
+  font-family: 'Noto Serif TC', serif;
+  font-size: 0.8rem;
+  padding: 5px 8px;
+  border-radius: var(--radius);
+  color: var(--ink);
+}
+.tag-input:focus { outline: none; border-color: var(--accent2); }
+.tag-add-btn {
+  padding: 5px 10px;
+  background: var(--paper3);
+  border: 1px solid var(--ink4);
+  border-radius: var(--radius);
+  font-size: 0.78rem;
+  color: var(--ink2);
+  cursor: pointer;
+}
+.tag-add-btn:hover { border-color: var(--accent2); color: var(--accent); }
+.common-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.common-tag {
+  padding: 3px 8px;
+  border: 1px dashed var(--ink4);
+  background: transparent;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  color: var(--ink3);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.common-tag:hover { border-color: var(--accent2); color: var(--accent); border-style: solid; }
+.selected-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag-chip {
+  padding: 3px 8px;
+  background: var(--paper3);
+  border: 1px solid var(--accent-light);
+  border-radius: 20px;
+  font-size: 0.68rem;
+  color: var(--accent);
+  display: flex; align-items: center; gap: 4px;
+}
+.tag-chip button { background: none; border: none; cursor: pointer; color: var(--accent2); font-size: 0.7rem; padding: 0; line-height: 1; }
+
+.content-section { margin-bottom: 20px; }
+.diary-textarea {
+  width: 100%;
+  min-height: 200px;
+  border: 1px solid var(--ink4);
+  background: var(--paper);
+  font-family: 'Noto Serif TC', serif;
+  font-size: 0.9rem;
+  line-height: 1.9;
+  padding: 14px;
+  border-radius: var(--radius);
+  color: var(--ink);
+  resize: vertical;
+  background-image: repeating-linear-gradient(
+    transparent, transparent 34px, var(--ink4) 34px, var(--ink4) 35px
+  );
+  background-position: 0 6px;
+}
+.diary-textarea:focus { outline: none; border-color: var(--accent2); }
+.diary-textarea::placeholder { color: var(--ink4); font-style: italic; }
+
+.char-count { text-align: right; font-size: 0.65rem; color: var(--ink4); margin-top: 4px; }
+
+.weather-section { margin-bottom: 20px; }
+.weather-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.weather-btn {
+  padding: 5px 10px;
+  border: 1px solid var(--ink4);
+  background: var(--paper);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  color: var(--ink2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.weather-btn.selected { border-color: var(--accent); background: var(--paper3); color: var(--accent); }
+.weather-btn:hover:not(.selected) { border-color: var(--ink3); }
+
+.save-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'Noto Serif TC', serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  color: var(--paper);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.save-btn:hover { background: var(--ink2); }
+.save-btn:active { transform: translateY(1px); }
+
+/* ── Review Page ── */
+.month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.month-title { font-family: 'Lora', serif; font-size: 1.05rem; font-style: italic; color: var(--ink); }
+.month-arrow { background: none; border: none; font-size: 1rem; color: var(--ink3); cursor: pointer; padding: 4px 8px; }
+.month-arrow:hover { color: var(--accent); }
+
+/* Calendar */
+.calendar { margin-bottom: 20px; }
+.cal-weekdays { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 4px; }
+.cal-day-label { text-align: center; font-size: 0.62rem; color: var(--ink3); padding: 4px 0; letter-spacing: 0.05em; }
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+.cal-cell {
+  aspect-ratio: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border-radius: var(--radius);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s;
+  font-size: 0.78rem;
+  color: var(--ink2);
+}
+.cal-cell.empty { cursor: default; }
+.cal-cell.today { font-weight: 700; color: var(--accent); }
+.cal-cell.has-entry { color: var(--ink); }
+.cal-cell.has-entry::after {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 3px;
+}
+.cal-cell.has-entry:hover { background: var(--paper3); }
+.cal-cell.selected { background: var(--paper3); box-shadow: inset 0 0 0 1px var(--accent2); }
+.mood-dot-😊::after { background: #f4b942; }
+.mood-dot-😌::after { background: #5d8a5e; }
+.mood-dot-😐::after { background: #9a8e7a; }
+.mood-dot-😔::after { background: #4a7c9e; }
+.mood-dot-😤::after { background: #c0392b; }
+.mood-dot-😰::after { background: #8b6f47; }
+.mood-dot-😴::after { background: #b89a72; }
+.mood-dot-🥰::after { background: #d4789a; }
+.mood-dot-🤩::after { background: #e8a030; }
+.mood-dot-😢::after { background: #7090b0; }
+
+/* Entry card */
+.entry-card {
+  background: var(--paper);
+  border: 1px solid var(--ink4);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+}
+.entry-card:hover { box-shadow: var(--shadow); }
+.entry-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.entry-date-str { font-size: 0.72rem; color: var(--ink3); letter-spacing: 0.05em; }
+.entry-mood-badge { font-size: 1rem; }
+.entry-energy-bar {
+  flex: 1; max-width: 60px; height: 3px;
+  background: var(--ink4); border-radius: 2px; overflow: hidden;
+}
+.entry-energy-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+.entry-weather { font-size: 0.75rem; color: var(--ink3); }
+.entry-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.entry-tag {
+  padding: 1px 6px;
+  background: var(--paper3);
+  border: 1px solid var(--ink4);
+  border-radius: 20px;
+  font-size: 0.62rem;
+  color: var(--ink3);
+}
+.entry-text { font-size: 0.85rem; line-height: 1.8; color: var(--ink2); }
+.entry-text.collapsed { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.entry-actions { display: flex; gap: 8px; margin-top: 10px; }
+.entry-action-btn {
+  padding: 3px 8px;
+  border: 1px solid var(--ink4);
+  background: transparent;
+  border-radius: var(--radius);
+  font-size: 0.68rem;
+  color: var(--ink3);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.entry-action-btn:hover { border-color: var(--accent2); color: var(--accent); }
+.entry-action-btn.del:hover { border-color: var(--red); color: var(--red); }
+
+/* ── Stats Page ── */
+.stats-section { margin-bottom: 24px; }
+.stats-title { font-family: 'Lora', serif; font-style: italic; font-size: 0.95rem; color: var(--ink); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--ink4); }
+.mood-chart { display: flex; align-items: flex-end; gap: 5px; height: 80px; margin-bottom: 8px; }
+.mood-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.mood-bar-fill {
+  width: 100%; border-radius: 2px 2px 0 0;
+  transition: height 0.4s ease;
+  min-height: 2px;
+  position: relative;
+}
+.mood-bar-fill:hover::after {
+  content: attr(data-count);
+  position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: var(--paper); font-size: 0.6rem;
+  padding: 1px 4px; border-radius: 2px; white-space: nowrap;
+}
+.mood-bar-emoji { font-size: 0.85rem; }
+.mood-bar-count { font-size: 0.6rem; color: var(--ink3); }
+
+.stat-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.stat-card {
+  background: var(--paper);
+  border: 1px solid var(--ink4);
+  border-radius: var(--radius);
+  padding: 12px;
+  text-align: center;
+}
+.stat-card-num { font-family: 'Lora', serif; font-size: 1.6rem; color: var(--accent); line-height: 1; margin-bottom: 3px; }
+.stat-card-label { font-size: 0.65rem; color: var(--ink3); letter-spacing: 0.06em; }
+
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag-cloud-item {
+  padding: 4px 10px;
+  background: var(--paper);
+  border: 1px solid var(--ink4);
+  border-radius: 20px;
+  font-size: 0.72rem;
+  color: var(--ink2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tag-cloud-item:hover { border-color: var(--accent2); color: var(--accent); }
+
+/* Weekly summary */
+.summary-block {
+  background: var(--paper);
+  border: 1px solid var(--ink4);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.summary-period { font-size: 0.68rem; color: var(--ink3); letter-spacing: 0.06em; margin-bottom: 4px; }
+.summary-text { font-size: 0.82rem; line-height: 1.7; color: var(--ink2); }
+.summary-mood-row { display: flex; gap: 6px; margin-top: 6px; align-items: center; }
+.summary-mood-label { font-size: 0.65rem; color: var(--ink3); }
+
+/* Export page */
+.export-card {
+  background: var(--paper);
+  border: 1px solid var(--ink4);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 10px;
+}
+.export-card-title { font-size: 0.85rem; color: var(--ink); margin-bottom: 4px; }
+.export-card-desc { font-size: 0.72rem; color: var(--ink3); margin-bottom: 12px; line-height: 1.5; }
+.export-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--paper3);
+  border: 1px solid var(--accent-light);
+  border-radius: var(--radius);
+  font-family: 'Noto Serif TC', serif;
+  font-size: 0.78rem;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-right: 8px;
+}
+.export-btn:hover { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+.import-file { display: none; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--ink); color: var(--paper);
+  padding: 8px 16px; border-radius: 20px; font-size: 0.78rem;
+  opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 100;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Bottom nav */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--paper);
+  border-top: 1px solid var(--ink4);
+  display: flex;
+  max-width: 640px; margin: 0 auto;
+}
+.bottom-nav-btn {
+  flex: 1;
+  padding: 10px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  font-size: 1.2rem;
+  transition: all 0.15s;
+}
+.bottom-nav-btn span { display: block; font-size: 0.58rem; font-family: 'Noto Serif TC', serif; color: var(--ink3); margin-top: 1px; }
+.bottom-nav-btn.active span { color: var(--accent); }
+.bottom-nav-btn:hover span { color: var(--ink2); }
+
+/* Divider */
+.divider { border: none; border-top: 1px solid var(--ink4); margin: 16px 0; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--ink3); font-style: italic; font-size: 0.85rem; }
+.empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+/* Responsive */
+@media (max-width: 400px) {
+  .mood-grid { grid-template-columns: repeat(5,1fr); }
+  .stat-cards { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="header-title">心情日記</div>
+        <div class="header-date" id="headerDate"></div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="showSearch()" title="搜尋">🔍</button>
+        <button class="icon-btn" onclick="switchPage('export')" title="匯出">⬇</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pages -->
+
+  <!-- Write Page -->
+  <div class="page active" id="page-write">
+    <div class="write-header">
+      <div class="date-selector">
+        <span class="date-label">日期</span>
+        <input type="date" class="date-input" id="writeDate">
+        <span id="editingBadge" style="display:none;font-size:0.65rem;color:var(--accent);background:var(--paper3);padding:2px 6px;border-radius:20px;border:1px solid var(--accent-light);">✎ 編輯中</span>
+      </div>
+    </div>
+
+    <div class="mood-section">
+      <div class="section-label">今天的心情</div>
+      <div class="mood-grid" id="moodGrid">
+        <button class="mood-btn" data-mood="🥰" onclick="selectMood('🥰')">🥰<span>幸福</span></button>
+        <button class="mood-btn" data-mood="🤩" onclick="selectMood('🤩')">🤩<span>興奮</span></button>
+        <button class="mood-btn" data-mood="😊" onclick="selectMood('😊')">😊<span>開心</span></button>
+        <button class="mood-btn" data-mood="😌" onclick="selectMood('😌')">😌<span>平靜</span></button>
+        <button class="mood-btn" data-mood="😐" onclick="selectMood('😐')">😐<span>普通</span></button>
+        <button class="mood-btn" data-mood="😴" onclick="selectMood('😴')">😴<span>疲倦</span></button>
+        <button class="mood-btn" data-mood="😔" onclick="selectMood('😔')">😔<span>低落</span></button>
+        <button class="mood-btn" data-mood="😢" onclick="selectMood('😢')">😢<span>難過</span></button>
+        <button class="mood-btn" data-mood="😰" onclick="selectMood('😰')">😰<span>焦慮</span></button>
+        <button class="mood-btn" data-mood="😤" onclick="selectMood('😤')">😤<span>煩躁</span></button>
+      </div>
+    </div>
+
+    <div class="energy-section">
+      <div class="section-label">能量值</div>
+      <div class="energy-row">
+        <span class="energy-label-sm">🔋低</span>
+        <input type="range" class="energy-slider" id="energySlider" min="0" max="100" value="50" oninput="updateEnergySlider(this)">
+        <span class="energy-label-sm">⚡高</span>
+        <span id="energyVal" style="font-size:0.72rem;color:var(--accent);min-width:28px;text-align:right;">50</span>
+      </div>
+    </div>
+
+    <div class="weather-section">
+      <div class="section-label">天氣</div>
+      <div class="weather-row" id="weatherRow">
+        <button class="weather-btn" data-weather="☀️" onclick="selectWeather('☀️')">☀️ 晴</button>
+        <button class="weather-btn" data-weather="⛅" onclick="selectWeather('⛅')">⛅ 多雲</button>
+        <button class="weather-btn" data-weather="🌧" onclick="selectWeather('🌧')">🌧 雨</button>
+        <button class="weather-btn" data-weather="🌩" onclick="selectWeather('🌩')">🌩 雷雨</button>
+        <button class="weather-btn" data-weather="🌫" onclick="selectWeather('🌫')">🌫 霧</button>
+        <button class="weather-btn" data-weather="❄️" onclick="selectWeather('❄️')">❄️ 冷</button>
+      </div>
+    </div>
+
+    <div class="tags-section">
+      <div class="section-label">標籤</div>
+      <div class="common-tags" id="commonTags">
+        <button class="common-tag" onclick="addTag('#工作')">＋工作</button>
+        <button class="common-tag" onclick="addTag('#感情')">＋感情</button>
+        <button class="common-tag" onclick="addTag('#家庭')">＋家庭</button>
+        <button class="common-tag" onclick="addTag('#健康')">＋健康</button>
+        <button class="common-tag" onclick="addTag('#寫作')">＋寫作</button>
+        <button class="common-tag" onclick="addTag('#閱讀')">＋閱讀</button>
+        <button class="common-tag" onclick="addTag('#旅行')">＋旅行</button>
+        <button class="common-tag" onclick="addTag('#朋友')">＋朋友</button>
+        <button class="common-tag" onclick="addTag('#美食')">＋美食</button>
+        <button class="common-tag" onclick="addTag('#反思')">＋反思</button>
+      </div>
+      <div class="tags-input-row">
+        <input type="text" class="tag-input" id="tagInput" placeholder="自訂標籤（不含＃）" onkeydown="if(event.key==='Enter'){addTagFromInput();}">
+        <button class="tag-add-btn" onclick="addTagFromInput()">＋</button>
+      </div>
+      <div class="selected-tags" id="selectedTags"></div>
+    </div>
+
+    <div class="content-section">
+      <div class="section-label">自由書寫</div>
+      <textarea class="diary-textarea" id="diaryText" placeholder="在這裡寫下今天的事、感受、或任何想記錄的⋯⋯" oninput="updateCharCount()"></textarea>
+      <div class="char-count" id="charCount">0 字</div>
+    </div>
+
+    <div class="content-section">
+      <div class="section-label">感恩紀錄</div>
+      <textarea class="diary-textarea" id="gratitudeText" placeholder="今天有什麼值得感謝的？哪怕很小也好⋯⋯" style="min-height:90px;"></textarea>
+    </div>
+
+    <button class="save-btn" onclick="saveEntry()">記錄這一天</button>
+  </div>
+
+  <!-- Review Page -->
+  <div class="page" id="page-review">
+    <div class="month-nav">
+      <button class="month-arrow" onclick="changeMonth(-1)">‹</button>
+      <div class="month-title" id="reviewMonthTitle"></div>
+      <button class="month-arrow" onclick="changeMonth(1)">›</button>
+    </div>
+
+    <div class="calendar" id="calendarGrid"></div>
+    <hr class="divider">
+    <div id="reviewEntries"></div>
+  </div>
+
+  <!-- Stats Page -->
+  <div class="page" id="page-stats">
+    <div class="stats-section">
+      <div class="stats-title">本月統計</div>
+      <div class="stat-cards" id="statCards"></div>
+
+      <div class="section-label" style="margin-bottom:10px;">心情分布</div>
+      <div class="mood-chart" id="moodChart"></div>
+
+      <div class="section-label" style="margin:14px 0 8px;">常用標籤</div>
+      <div class="tag-cloud" id="tagCloud"></div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="stats-section">
+      <div class="stats-title">每週回顧</div>
+      <div id="weeklyReview"></div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="stats-section">
+      <div class="stats-title">每月回顧</div>
+      <div id="monthlyReview"></div>
+    </div>
+  </div>
+
+  <!-- Export Page -->
+  <div class="page" id="page-export">
+    <div class="export-card">
+      <div class="export-card-title">📦 匯出備份（JSON）</div>
+      <div class="export-card-desc">將所有日記資料匯出成 JSON 檔案，存到手機或雲端備份。格式可以在未來匯入還原。</div>
+      <button class="export-btn" onclick="exportJSON()">匯出 JSON</button>
+    </div>
+    <div class="export-card">
+      <div class="export-card-title">📄 匯出本月文字（TXT）</div>
+      <div class="export-card-desc">將本月的日記內容匯出成純文字檔，方便閱讀或整理。</div>
+      <button class="export-btn" onclick="exportTXT()">匯出 TXT</button>
+    </div>
+    <div class="export-card" style="border-left:3px solid var(--accent);">
+      <div class="export-card-title">🤖 複製給 Claude 分析</div>
+      <div class="export-card-desc">將日記整理成 Claude 容易讀懂的格式，複製後貼到 Claude 對話即可分析情緒趨勢、找尋模式或獲得反思建議。</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+        <span style="font-size:0.72rem;color:var(--ink3);">範圍：</span>
+        <select id="claudeRange" style="border:1px solid var(--ink4);background:var(--paper);font-family:'Noto Serif TC',serif;font-size:0.78rem;padding:4px 8px;border-radius:var(--radius);color:var(--ink);">
+          <option value="week">最近 7 天</option>
+          <option value="month" selected>本月</option>
+          <option value="3month">近 3 個月</option>
+          <option value="all">全部</option>
+        </select>
+        <select id="claudePrompt" style="border:1px solid var(--ink4);background:var(--paper);font-family:'Noto Serif TC',serif;font-size:0.78rem;padding:4px 8px;border-radius:var(--radius);color:var(--ink);">
+          <option value="general">綜合分析</option>
+          <option value="emotion">情緒模式</option>
+          <option value="energy">能量趨勢</option>
+          <option value="growth">成長反思</option>
+        </select>
+      </div>
+      <button class="export-btn" onclick="copyForClaude()" style="background:var(--accent);color:var(--paper);border-color:var(--accent);">複製到剪貼簿</button>
+      <div id="claudeCopyResult" style="display:none;margin-top:8px;font-size:0.72rem;color:var(--green);">✓ 已複製！直接貼到 Claude 對話框即可</div>
+    </div>
+    <div class="export-card">
+      <div class="export-card-title">⬆️ 匯入備份</div>
+      <div class="export-card-desc">將之前匯出的 JSON 備份檔重新匯入。注意：這會合併資料，不會刪除現有記錄。</div>
+      <button class="export-btn" onclick="document.getElementById('importFile').click()">選擇檔案</button>
+      <input type="file" id="importFile" accept=".json" onchange="importJSON(event)" class="import-file">
+    </div>
+    <div class="export-card">
+      <div class="export-card-title" style="color:var(--red);">🗑 清除所有資料</div>
+      <div class="export-card-desc">永久刪除所有日記記錄。建議先匯出備份後再執行。</div>
+      <button class="export-btn" style="border-color:#e0b0b0;color:var(--red);" onclick="clearAll()">清除資料</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <button class="bottom-nav-btn active" id="nav-write" onclick="switchPage('write')">✏️<span>記錄</span></button>
+  <button class="bottom-nav-btn" id="nav-review" onclick="switchPage('review')">📅<span>回顧</span></button>
+  <button class="bottom-nav-btn" id="nav-stats" onclick="switchPage('stats')">📊<span>統計</span></button>
+  <button class="bottom-nav-btn" id="nav-export" onclick="switchPage('export')">⬇<span>匯出</span></button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Search Modal -->
+<div id="searchModal" style="display:none;position:fixed;inset:0;background:rgba(44,36,22,0.5);z-index:200;" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:var(--paper);margin:60px 16px 16px;border-radius:6px;padding:16px;max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input type="text" id="searchInput" placeholder="搜尋關鍵字或 #標籤" style="flex:1;border:1px solid var(--ink4);background:var(--paper2);font-family:'Noto Serif TC',serif;font-size:0.85rem;padding:7px 10px;border-radius:var(--radius);color:var(--ink);" oninput="doSearch()">
+      <button onclick="document.getElementById('searchModal').style.display='none'" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink3);">✕</button>
+    </div>
+    <div id="searchResults"></div>
+  </div>
+</div>
+
+<script>
+// ── Config ──
+const API_URL = 'https://script.google.com/macros/s/AKfycbzJg5PyxdzMFZ9D3m1_Af2ntY-H7pYBzQ6VYDpbyejG5BX5Ok1QLc_qDnrVWo0410eGJA/exec';
+
+// ── State ──
+let currentMood = []; // 複選
+let currentWeather = '';
+let currentTags = [];
+let reviewYear = new Date().getFullYear();
+let reviewMonth = new Date().getMonth();
+let editingDate = null;
+let entriesCache = {}; // 本地快取，減少 API 呼叫
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', async () => {
+  const now = new Date();
+  document.getElementById('writeDate').value = toDateStr(now);
+  document.getElementById('headerDate').textContent = now.toLocaleDateString('zh-TW', {year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  updateEnergySlider(document.getElementById('energySlider'));
+  showToast('載入中…');
+  await loadAllEntries();
+  renderCalendar();
+  renderStats();
+});
+
+// ── API ──
+async function loadAllEntries() {
+  try {
+    const res = await fetch(API_URL + '?action=getAll');
+    const data = await res.json();
+    entriesCache = {};
+    (data.entries || []).forEach(e => {
+      if (e.date) entriesCache[e.date] = e;
+    });
+  } catch(err) {
+    showToast('⚠️ 無法連線，使用本機快取');
+    try { entriesCache = JSON.parse(localStorage.getItem('moodDiary_cache') || '{}'); } catch(e) {}
+  }
+}
+
+async function apiSave(entry) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'save', entry })
+  });
+  return res.json();
+}
+
+async function apiDelete(date) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'delete', date })
+  });
+  return res.json();
+}
+
+// ── Helpers ──
+function toDateStr(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function getEntries() { return entriesCache; }
+function saveLocalCache() { localStorage.setItem('moodDiary_cache', JSON.stringify(entriesCache)); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+function moodScore(mood) {
+  const s = { '🥰':5,'🤩':5,'😊':4,'😌':3,'😐':3,'😴':2,'😔':2,'😢':1,'😰':1,'😤':1 };
+  return s[mood] || 3;
+}
+function moodColor(mood) {
+  const c = { '🥰':'#d4789a','🤩':'#e8a030','😊':'#f4b942','😌':'#5d8a5e','😐':'#9a8e7a','😴':'#b89a72','😔':'#4a7c9e','😢':'#7090b0','😰':'#8b6f47','😤':'#c0392b' };
+  return c[mood] || '#c4b9a4';
+}
+
+// ── Page switching ──
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const nb = document.getElementById('nav-' + name);
+  if (nb) nb.classList.add('active');
+  if (name === 'review') renderCalendar();
+  if (name === 'stats') renderStats();
+}
+
+// ── Mood / Weather / Tags ──
+function selectMood(m) {
+  if (currentMood.includes(m)) {
+    currentMood = currentMood.filter(x => x !== m);
+  } else {
+    currentMood.push(m);
+  }
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.toggle('selected', currentMood.includes(b.dataset.mood)));
+}
+function selectWeather(w) {
+  currentWeather = w;
+  document.querySelectorAll('.weather-btn').forEach(b => b.classList.toggle('selected', b.dataset.weather === w));
+}
+function addTag(tag) {
+  if (!tag.startsWith('#')) tag = '#' + tag;
+  if (!currentTags.includes(tag)) {
+    currentTags.push(tag);
+    renderSelectedTags();
+  }
+}
+function addTagFromInput() {
+  const v = document.getElementById('tagInput').value.trim().replace(/^#+/, '');
+  if (v) { addTag('#' + v); document.getElementById('tagInput').value = ''; }
+}
+function removeTag(tag) {
+  currentTags = currentTags.filter(t => t !== tag);
+  renderSelectedTags();
+}
+function renderSelectedTags() {
+  document.getElementById('selectedTags').innerHTML = currentTags.map(t =>
+    `<span class="tag-chip">${t} <button onclick="removeTag('${t}')">✕</button></span>`
+  ).join('');
+}
+function updateEnergySlider(el) {
+  const val = el.value;
+  document.getElementById('energyVal').textContent = val;
+  el.style.setProperty('--val', val + '%');
+}
+function updateCharCount() {
+  const n = document.getElementById('diaryText').value.length;
+  document.getElementById('charCount').textContent = n + ' 字';
+}
+
+// ── Save ──
+async function saveEntry() {
+  const dateStr = document.getElementById('writeDate').value;
+  const text = document.getElementById('diaryText').value.trim();
+  if (!currentMood.length) { showToast('請選擇今天的心情 ✨'); return; }
+  if (!text) { showToast('寫點什麼吧 📝'); return; }
+
+  const entry = {
+    date: dateStr,
+    mood: currentMood.join(','), // 複選用逗號分隔存
+    energy: parseInt(document.getElementById('energySlider').value),
+    weather: currentWeather,
+    tags: [...currentTags],
+    gratitude: document.getElementById('gratitudeText').value.trim(),
+    text: text,
+    savedAt: new Date().toISOString()
+  };
+
+  showToast('儲存中…');
+  try {
+    await apiSave(entry);
+    entriesCache[dateStr] = entry;
+    saveLocalCache();
+    showToast('已記錄 ✓');
+  } catch(err) {
+    entriesCache[dateStr] = entry;
+    saveLocalCache();
+    showToast('⚠️ 離線儲存，稍後會同步');
+  }
+
+  // reset
+  currentMood = []; currentWeather = ''; currentTags = [];
+  document.querySelectorAll('.mood-btn, .weather-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('diaryText').value = '';
+  document.getElementById('gratitudeText').value = '';
+  document.getElementById('energySlider').value = 50;
+  updateEnergySlider(document.getElementById('energySlider'));
+  updateCharCount();
+  renderSelectedTags();
+  document.getElementById('writeDate').value = toDateStr(new Date());
+  document.getElementById('editingBadge').style.display = 'none';
+  editingDate = null;
+  renderCalendar();
+  renderStats();
+}
+
+// ── Calendar ──
+function changeMonth(dir) {
+  reviewMonth += dir;
+  if (reviewMonth < 0) { reviewMonth = 11; reviewYear--; }
+  if (reviewMonth > 11) { reviewMonth = 0; reviewYear++; }
+  renderCalendar();
+}
+function renderCalendar() {
+  const months = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  document.getElementById('reviewMonthTitle').textContent = `${reviewYear} ${months[reviewMonth]}`;
+
+  const entries = getEntries();
+  const days = ['日','一','二','三','四','五','六'];
+  const first = new Date(reviewYear, reviewMonth, 1);
+  const lastDay = new Date(reviewYear, reviewMonth+1, 0).getDate();
+  const startDow = first.getDay();
+  const today = toDateStr(new Date());
+
+  let html = '<div class="cal-weekdays">' + days.map(d => `<div class="cal-day-label">${d}</div>`).join('') + '</div><div class="cal-grid">';
+  for (let i = 0; i < startDow; i++) html += '<div class="cal-cell empty"></div>';
+  for (let d = 1; d <= lastDay; d++) {
+    const ds = `${reviewYear}-${String(reviewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const entry = entries[ds];
+    const isToday = ds === today;
+    let cls = 'cal-cell';
+    if (entry) {
+      const firstMood = entry.mood ? entry.mood.split(',')[0] : '';
+      cls += ' has-entry mood-dot-' + firstMood;
+    }
+    if (isToday) cls += ' today';
+    html += `<div class="${cls}" onclick="selectDay('${ds}')">${d}</div>`;
+  }
+  html += '</div>';
+  document.getElementById('calendarGrid').innerHTML = html;
+  renderMonthEntries();
+}
+function selectDay(ds) {
+  document.querySelectorAll('.cal-cell').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  const entries = getEntries();
+  const entry = entries[ds];
+  if (entry) {
+    const wrap = document.getElementById('reviewEntries');
+    wrap.innerHTML = '<div style="font-size:0.7rem;color:var(--ink3);margin-bottom:8px;letter-spacing:0.05em;">' + ds + '</div>' + renderEntryCard(ds, entry);
+  }
+}
+function renderMonthEntries() {
+  const entries = getEntries();
+  const prefix = `${reviewYear}-${String(reviewMonth+1).padStart(2,'0')}-`;
+  const monthEntries = Object.entries(entries).filter(([k]) => k.startsWith(prefix)).sort((a,b) => b[0].localeCompare(a[0]));
+  if (!monthEntries.length) {
+    document.getElementById('reviewEntries').innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>本月還沒有記錄</div>';
+    return;
+  }
+  document.getElementById('reviewEntries').innerHTML = monthEntries.map(([ds, e]) => renderEntryCard(ds, e)).join('');
+}
+function renderEntryCard(ds, e) {
+  const tagsHtml = (e.tags||[]).map(t => `<span class="entry-tag">${t}</span>`).join('');
+  const short = e.text && e.text.length > 120;
+  const id = 'et_' + ds.replace(/-/g,'');
+  // mood 支援複選（逗號分隔）
+  const moodEmojis = e.mood ? e.mood.split(',').join(' ') : '';
+  return `<div class="entry-card">
+    <div class="entry-meta">
+      <span class="entry-mood-badge" style="font-size:1.2rem;letter-spacing:2px;">${moodEmojis}</span>
+      <span class="entry-date-str">${ds}</span>
+      ${e.energy!==undefined?`<div class="entry-energy-bar"><div class="entry-energy-fill" style="width:${e.energy}%"></div></div>`:'' }
+      ${e.weather?`<span class="entry-weather">${e.weather}</span>`:''}
+    </div>
+    ${tagsHtml?`<div class="entry-tags">${tagsHtml}</div>`:''}
+    ${e.gratitude?`<div style="font-size:0.75rem;color:var(--green);margin-bottom:6px;line-height:1.6;border-left:2px solid var(--green);padding-left:8px;">🌿 ${e.gratitude.replace(/\n/g,'<br>')}</div>`:''}
+    <div class="entry-text${short?' collapsed':''}" id="${id}">${e.text.replace(/\n/g,'<br>')}</div>
+    ${short?`<button class="entry-action-btn" onclick="toggleExpand('${id}',this)" style="margin-top:4px;">展開 ▾</button>`:''}
+    <div class="entry-actions">
+      <button class="entry-action-btn" onclick="editEntry('${ds}')">✎ 編輯</button>
+      <button class="entry-action-btn del" onclick="deleteEntry('${ds}')">刪除</button>
+    </div>
+  </div>`;
+}
+function toggleExpand(id, btn) {
+  const el = document.getElementById(id);
+  el.classList.toggle('collapsed');
+  btn.textContent = el.classList.contains('collapsed') ? '展開 ▾' : '收合 ▴';
+}
+function editEntry(ds) {
+  const entries = getEntries();
+  const e = entries[ds];
+  if (!e) return;
+  switchPage('write');
+  document.getElementById('writeDate').value = ds;
+  // mood 載回陣列
+  const moodArr = e.mood ? e.mood.split(',') : [];
+  currentMood = moodArr;
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.toggle('selected', currentMood.includes(b.dataset.mood)));
+  if (e.weather) selectWeather(e.weather);
+  document.getElementById('energySlider').value = e.energy || 50;
+  updateEnergySlider(document.getElementById('energySlider'));
+  currentTags = [...(e.tags||[])];
+  renderSelectedTags();
+  document.getElementById('diaryText').value = e.text;
+  document.getElementById('gratitudeText').value = e.gratitude || '';
+  updateCharCount();
+  document.getElementById('editingBadge').style.display = 'inline-block';
+  editingDate = ds;
+  window.scrollTo(0,0);
+}
+async function deleteEntry(ds) {
+  if (!confirm(`確定刪除 ${ds} 的記錄？`)) return;
+  try {
+    await apiDelete(ds);
+    delete entriesCache[ds];
+    saveLocalCache();
+    showToast('已刪除');
+  } catch(err) {
+    delete entriesCache[ds];
+    saveLocalCache();
+    showToast('⚠️ 離線刪除，稍後會同步');
+  }
+  renderCalendar();
+}
+
+// ── Stats ──
+function renderStats() {
+  const entries = getEntries();
+  const now = new Date();
+  const yr = now.getFullYear(), mo = now.getMonth();
+  const prefix = `${yr}-${String(mo+1).padStart(2,'0')}-`;
+  const monthEntries = Object.entries(entries).filter(([k]) => k.startsWith(prefix));
+
+  // Stat cards
+  const totalDays = new Date(yr, mo+1, 0).getDate();
+  const recorded = monthEntries.length;
+  let totalEnergy = 0, moodCounts = {}, allTags = {};
+  monthEntries.forEach(([_, e]) => {
+    totalEnergy += e.energy || 50;
+    if (e.mood) e.mood.split(',').forEach(m => { moodCounts[m] = (moodCounts[m]||0)+1; });
+    (e.tags||[]).forEach(t => allTags[t] = (allTags[t]||0)+1);
+  });
+  const avgEnergy = recorded ? Math.round(totalEnergy/recorded) : 0;
+  const topMood = Object.entries(moodCounts).sort((a,b)=>b[1]-a[1])[0];
+
+  document.getElementById('statCards').innerHTML = `
+    <div class="stat-card"><div class="stat-card-num">${recorded}</div><div class="stat-card-label">本月記錄天數</div></div>
+    <div class="stat-card"><div class="stat-card-num">${Math.round(recorded/totalDays*100)}%</div><div class="stat-card-label">記錄率</div></div>
+    <div class="stat-card"><div class="stat-card-num">${avgEnergy}</div><div class="stat-card-label">平均能量值</div></div>
+    <div class="stat-card"><div class="stat-card-num">${topMood?topMood[0]:'—'}</div><div class="stat-card-label">最常出現心情</div></div>
+  `;
+
+  // Mood chart
+  const moods = ['🥰','🤩','😊','😌','😐','😴','😔','😢','😰','😤'];
+  const maxCount = Math.max(...moods.map(m => moodCounts[m]||0), 1);
+  document.getElementById('moodChart').innerHTML = moods.map(m => {
+    const c = moodCounts[m] || 0;
+    const h = c ? Math.max(Math.round((c/maxCount)*70), 4) : 0;
+    return `<div class="mood-bar-wrap">
+      <div class="mood-bar-fill" style="height:${h}px;background:${moodColor(m)}" data-count="${c}次"></div>
+      <div class="mood-bar-emoji">${m}</div>
+    </div>`;
+  }).join('');
+
+  // Tag cloud
+  const sortedTags = Object.entries(allTags).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  document.getElementById('tagCloud').innerHTML = sortedTags.length
+    ? sortedTags.map(([t,c]) => `<span class="tag-cloud-item">${t} <span style="color:var(--ink3)">${c}</span></span>`).join('')
+    : '<span style="color:var(--ink3);font-size:0.78rem;font-style:italic;">本月尚無標籤</span>';
+
+  // Weekly review
+  renderWeeklyReview(entries, yr, mo);
+  renderMonthlyReview(entries);
+}
+
+function renderWeeklyReview(entries, yr, mo) {
+  const weeks = [];
+  const first = new Date(yr, mo, 1);
+  const last = new Date(yr, mo+1, 0);
+  let cur = new Date(first);
+  // align to Monday
+  const dow = cur.getDay();
+  if (dow !== 1) cur.setDate(cur.getDate() - (dow === 0 ? 6 : dow-1));
+
+  while (cur <= last) {
+    const wStart = new Date(cur);
+    const wEnd = new Date(cur); wEnd.setDate(wEnd.getDate()+6);
+    const wEntries = [];
+    for (let d = new Date(wStart); d <= wEnd; d.setDate(d.getDate()+1)) {
+      const ds = toDateStr(d);
+      if (entries[ds]) wEntries.push([ds, entries[ds]]);
+    }
+    if (wEntries.length) weeks.push({ start: wStart, end: wEnd, entries: wEntries });
+    cur.setDate(cur.getDate()+7);
+  }
+
+  const html = weeks.map(w => {
+    const moodList = w.entries.map(([,e]) => e.mood).filter(Boolean);
+    const avgEn = Math.round(w.entries.reduce((s,[,e])=>s+(e.energy||50),0)/w.entries.length);
+    const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
+    return `<div class="summary-block">
+      <div class="summary-period">${fmt(w.start)} — ${fmt(w.end)}　${w.entries.length} 筆記錄</div>
+      <div class="summary-mood-row">
+        <span class="summary-mood-label">心情：</span>${moodList.join(' ')}
+        <span class="summary-mood-label" style="margin-left:8px;">平均能量：</span><span style="font-size:0.78rem;color:var(--accent)">${avgEn}</span>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty-state"><div class="empty-icon">📖</div>本月尚無記錄</div>';
+  document.getElementById('weeklyReview').innerHTML = html;
+}
+
+function renderMonthlyReview(entries) {
+  // last 6 months
+  const months = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const prefix = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-`;
+    const me = Object.entries(entries).filter(([k]) => k.startsWith(prefix));
+    if (!me.length) continue;
+    const avgEn = Math.round(me.reduce((s,[,e])=>s+(e.energy||50),0)/me.length);
+    const moodCounts = {};
+    me.forEach(([,e]) => { if(e.mood) moodCounts[e.mood]=(moodCounts[e.mood]||0)+1; });
+    const topMoods = Object.entries(moodCounts).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([m])=>m);
+    months.push({ label: `${d.getFullYear()}/${d.getMonth()+1}`, count: me.length, avgEn, topMoods });
+  }
+  document.getElementById('monthlyReview').innerHTML = months.map(m =>
+    `<div class="summary-block">
+      <div class="summary-period">${m.label}　${m.count} 筆記錄</div>
+      <div class="summary-mood-row">
+        <span class="summary-mood-label">主要情緒：</span>${m.topMoods.join(' ')}
+        <span class="summary-mood-label" style="margin-left:8px;">平均能量：</span><span style="font-size:0.78rem;color:var(--accent)">${m.avgEn}</span>
+      </div>
+    </div>`
+  ).join('') || '<div class="empty-state"><div class="empty-icon">📖</div>尚無歷史記錄</div>';
+}
+
+// ── Export / Import ──
+function exportJSON() {
+  const data = JSON.stringify(entriesCache, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '心情日記_備份_' + toDateStr(new Date()) + '.json';
+  a.click();
+  showToast('已匯出 JSON ✓');
+}
+function exportTXT() {
+  const entries = getEntries();
+  const now = new Date();
+  const prefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-`;
+  const lines = Object.entries(entries)
+    .filter(([k]) => k.startsWith(prefix))
+    .sort((a,b) => a[0].localeCompare(b[0]))
+    .map(([ds, e]) => `【${ds}】${e.mood||''} ${e.weather||''}\n能量：${e.energy||'-'}\n標籤：${(e.tags||[]).join(' ')||'無'}\n🌿 感恩：${e.gratitude||'—'}\n\n${e.text}\n\n${'—'.repeat(20)}`);
+  const blob = new Blob([lines.join('\n\n')], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '心情日記_' + prefix.slice(0,7) + '.txt';
+  a.click();
+  showToast('已匯出 TXT ✓');
+}
+async function importJSON(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      showToast('匯入中…');
+      for (const [date, entry] of Object.entries(imported)) {
+        await apiSave({...entry, date});
+        entriesCache[date] = {...entry, date};
+      }
+      saveLocalCache();
+      renderCalendar();
+      renderStats();
+      showToast(`匯入完成，共 ${Object.keys(imported).length} 筆 ✓`);
+    } catch(err) {
+      showToast('❌ 匯入失敗，檔案格式錯誤');
+    }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
+}
+async function clearAll() {
+  if (!confirm('確定要清除所有日記資料？此動作無法復原。')) return;
+  if (!confirm('再次確認：所有記錄將永久刪除。')) return;
+  for (const date of Object.keys(entriesCache)) {
+    await apiDelete(date);
+  }
+  entriesCache = {};
+  saveLocalCache();
+  renderCalendar();
+  renderStats();
+  showToast('已清除所有資料');
+}
+
+// ── Copy for Claude ──
+function copyForClaude() {
+  const range = document.getElementById('claudeRange').value;
+  const promptType = document.getElementById('claudePrompt').value;
+  const entries = getEntries();
+  const now = new Date();
+
+  // 篩選範圍
+  let filtered = Object.entries(entries);
+  if (range === 'week') {
+    const cutoff = new Date(now); cutoff.setDate(cutoff.getDate() - 7);
+    filtered = filtered.filter(([ds]) => ds >= toDateStr(cutoff));
+  } else if (range === 'month') {
+    const prefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-`;
+    filtered = filtered.filter(([ds]) => ds.startsWith(prefix));
+  } else if (range === '3month') {
+    const cutoff = new Date(now); cutoff.setMonth(cutoff.getMonth() - 3);
+    filtered = filtered.filter(([ds]) => ds >= toDateStr(cutoff));
+  }
+  filtered = filtered.sort((a,b) => a[0].localeCompare(b[0]));
+
+  if (!filtered.length) { showToast('該範圍內沒有日記記錄'); return; }
+
+  // 組成提示語
+  const prompts = {
+    general: '請幫我綜合分析以下這段期間的心情日記，包括：\n1. 整體情緒狀態和趨勢\n2. 高頻出現的情緒和可能原因\n3. 能量值的變化規律\n4. 常出現的主題或關鍵詞\n5. 給我一些具體的反思建議',
+    emotion: '請幫我分析以下心情日記的情緒模式：\n1. 哪些情緒最常出現？在什麼情況下出現？\n2. 情緒的高低點分別在哪幾天？\n3. 有沒有情緒觸發的規律（例如特定標籤對應特定情緒）？\n4. 給我察覺情緒的具體建議',
+    energy: '請幫我分析以下心情日記的能量趨勢：\n1. 能量整體偏高還是偏低？\n2. 哪些日子能量特別高或低？和什麼有關？\n3. 能量和心情有沒有相關性？\n4. 給我提升能量的具體建議',
+    growth: '請以成長和自我覺察的角度分析以下心情日記：\n1. 我在這段時間有什麼變化或成長？\n2. 我的感恩紀錄反映了什麼價值觀？\n3. 有沒有重複出現的困境或挑戰？\n4. 給我 3 個具體的成長方向建議'
+  };
+
+  // 組成日記內容
+  const diaryText = filtered.map(([ds, e]) => {
+    const moodStr = e.mood || '—';
+    const lines = [
+      `📅 ${ds}`,
+      `心情：${moodStr}　能量：${e.energy || '—'}　天氣：${e.weather || '—'}`,
+    ];
+    if (e.tags && e.tags.length) lines.push(`標籤：${Array.isArray(e.tags) ? e.tags.join(' ') : e.tags}`);
+    if (e.gratitude) lines.push(`🌿 感恩：${e.gratitude}`);
+    if (e.text) lines.push(`\n${e.text}`);
+    return lines.join('\n');
+  }).join('\n\n---\n\n');
+
+  const fullText = `${prompts[promptType]}\n\n以下是我的心情日記（共 ${filtered.length} 筆，${filtered[0][0]} 至 ${filtered[filtered.length-1][0]}）：\n\n---\n\n${diaryText}`;
+
+  navigator.clipboard.writeText(fullText).then(() => {
+    const result = document.getElementById('claudeCopyResult');
+    result.style.display = 'block';
+    setTimeout(() => result.style.display = 'none', 4000);
+  }).catch(() => {
+    showToast('❌ 複製失敗，請手動複製');
+  });
+}
+
+// ── Search ──
+function showSearch() {
+  document.getElementById('searchModal').style.display = 'block';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchResults').innerHTML = '';
+  setTimeout(() => document.getElementById('searchInput').focus(), 100);
+}
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!q) { document.getElementById('searchResults').innerHTML = ''; return; }
+  const entries = getEntries();
+  const results = Object.entries(entries)
+    .filter(([ds, e]) => {
+      return e.text.toLowerCase().includes(q) ||
+        (e.tags||[]).some(t => t.toLowerCase().includes(q)) ||
+        ds.includes(q);
+    })
+    .sort((a,b) => b[0].localeCompare(a[0]))
+    .slice(0,20);
+  if (!results.length) {
+    document.getElementById('searchResults').innerHTML = '<div class="empty-state" style="padding:20px">找不到相關記錄</div>';
+    return;
+  }
+  document.getElementById('searchResults').innerHTML = results.map(([ds, e]) => renderEntryCard(ds, e)).join('');
+}
+</script>
+</body>
+</html>
