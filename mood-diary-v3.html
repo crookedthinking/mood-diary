@@ -633,27 +633,39 @@ body {
 
   <!-- Export Page -->
   <div class="page" id="page-export">
+
+    <!-- 共用日期範圍 -->
+    <div class="export-card" style="border-left:3px solid var(--accent2);margin-bottom:4px;">
+      <div class="export-card-title" style="margin-bottom:10px;">📆 選擇匯出範圍</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+        <button class="common-tag" onclick="setExportRange('week')">最近 7 天</button>
+        <button class="common-tag" onclick="setExportRange('month')">本月</button>
+        <button class="common-tag" onclick="setExportRange('3month')">近 3 個月</button>
+        <button class="common-tag" onclick="setExportRange('all')">全部</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span style="font-size:0.72rem;color:var(--ink3);">從：</span>
+        <input type="date" id="exportStart" style="border:1px solid var(--ink4);background:var(--paper);font-family:'Noto Serif TC',serif;font-size:0.78rem;padding:4px 8px;border-radius:var(--radius);color:var(--ink);">
+        <span style="font-size:0.72rem;color:var(--ink3);">到：</span>
+        <input type="date" id="exportEnd" style="border:1px solid var(--ink4);background:var(--paper);font-family:'Noto Serif TC',serif;font-size:0.78rem;padding:4px 8px;border-radius:var(--radius);color:var(--ink);">
+      </div>
+    </div>
+
     <div class="export-card">
       <div class="export-card-title">📦 匯出備份（JSON）</div>
-      <div class="export-card-desc">將所有日記資料匯出成 JSON 檔案，存到手機或雲端備份。格式可以在未來匯入還原。</div>
+      <div class="export-card-desc">將選定範圍的日記資料匯出成 JSON 檔案，可在未來匯入還原。</div>
       <button class="export-btn" onclick="exportJSON()">匯出 JSON</button>
     </div>
     <div class="export-card">
-      <div class="export-card-title">📄 匯出本月文字（TXT）</div>
-      <div class="export-card-desc">將本月的日記內容匯出成純文字檔，方便閱讀或整理。</div>
+      <div class="export-card-title">📄 匯出文字（TXT）</div>
+      <div class="export-card-desc">將選定範圍的日記內容匯出成純文字檔，方便閱讀或整理。</div>
       <button class="export-btn" onclick="exportTXT()">匯出 TXT</button>
     </div>
     <div class="export-card" style="border-left:3px solid var(--accent);">
       <div class="export-card-title">🤖 複製給 Claude 分析</div>
-      <div class="export-card-desc">將日記整理成 Claude 容易讀懂的格式，複製後貼到 Claude 對話即可分析情緒趨勢、找尋模式或獲得反思建議。</div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
-        <span style="font-size:0.72rem;color:var(--ink3);">範圍：</span>
-        <select id="claudeRange" style="border:1px solid var(--ink4);background:var(--paper);font-family:'Noto Serif TC',serif;font-size:0.78rem;padding:4px 8px;border-radius:var(--radius);color:var(--ink);">
-          <option value="week">最近 7 天</option>
-          <option value="month" selected>本月</option>
-          <option value="3month">近 3 個月</option>
-          <option value="all">全部</option>
-        </select>
+      <div class="export-card-desc">將日記整理成 Claude 容易讀懂的格式，複製後貼到 Claude 對話即可分析。</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+        <span style="font-size:0.72rem;color:var(--ink3);">分析角度：</span>
         <select id="claudePrompt" style="border:1px solid var(--ink4);background:var(--paper);font-family:'Noto Serif TC',serif;font-size:0.78rem;padding:4px 8px;border-radius:var(--radius);color:var(--ink);">
           <option value="general">綜合分析</option>
           <option value="emotion">情緒模式</option>
@@ -720,6 +732,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('writeDate').value = toDateStr(now);
   document.getElementById('headerDate').textContent = now.toLocaleDateString('zh-TW', {year:'numeric',month:'long',day:'numeric',weekday:'long'});
   updateEnergySlider(document.getElementById('energySlider'));
+  // 預設匯出日期範圍為本月
+  const firstOfMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+  document.getElementById('exportStart').value = firstOfMonth;
+  document.getElementById('exportEnd').value = toDateStr(now);
   showToast('載入中…');
   await loadAllEntries();
   renderCalendar();
@@ -1111,28 +1127,62 @@ function renderMonthlyReview(entries) {
   ).join('') || '<div class="empty-state"><div class="empty-icon">📖</div>尚無歷史記錄</div>';
 }
 
+// ── Export range helpers ──
+function getExportRange() {
+  const start = document.getElementById('exportStart').value;
+  const end = document.getElementById('exportEnd').value;
+  if (!start || !end) { showToast('請選擇日期範圍'); return null; }
+  if (start > end) { showToast('開始日期不能晚於結束日期'); return null; }
+  return { start, end };
+}
+function setExportRange(range) {
+  const now = new Date();
+  let start, end = toDateStr(now);
+  if (range === 'week') {
+    const s = new Date(now); s.setDate(s.getDate() - 6);
+    start = toDateStr(s);
+  } else if (range === 'month') {
+    start = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+  } else if (range === '3month') {
+    const s = new Date(now); s.setMonth(s.getMonth() - 3);
+    start = toDateStr(s);
+  } else if (range === 'all') {
+    const dates = Object.keys(getEntries()).sort();
+    start = dates[0] || toDateStr(now);
+  }
+  document.getElementById('exportStart').value = start;
+  document.getElementById('exportEnd').value = end;
+}
+function filterByRange(start, end) {
+  return Object.entries(getEntries())
+    .filter(([ds]) => ds >= start && ds <= end)
+    .sort((a,b) => a[0].localeCompare(b[0]));
+}
+
 // ── Export / Import ──
 function exportJSON() {
-  const data = JSON.stringify(entriesCache, null, 2);
-  const blob = new Blob([data], {type:'application/json'});
+  const range = getExportRange(); if (!range) return;
+  const filtered = filterByRange(range.start, range.end);
+  if (!filtered.length) { showToast('該範圍內沒有記錄'); return; }
+  const obj = Object.fromEntries(filtered);
+  const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = '心情日記_備份_' + toDateStr(new Date()) + '.json';
+  a.download = `心情日記_${range.start}_${range.end}.json`;
   a.click();
   showToast('已匯出 JSON ✓');
 }
 function exportTXT() {
-  const entries = getEntries();
-  const now = new Date();
-  const prefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-`;
-  const lines = Object.entries(entries)
-    .filter(([k]) => k.startsWith(prefix))
-    .sort((a,b) => a[0].localeCompare(b[0]))
-    .map(([ds, e]) => `【${ds}】${e.mood||''} ${e.weather||''}\n能量：${e.energy||'-'}\n標籤：${(e.tags||[]).join(' ')||'無'}\n🌿 感恩：${e.gratitude||'—'}\n\n${e.text}\n\n${'—'.repeat(20)}`);
+  const range = getExportRange(); if (!range) return;
+  const filtered = filterByRange(range.start, range.end);
+  if (!filtered.length) { showToast('該範圍內沒有記錄'); return; }
+  const lines = filtered.map(([ds, e]) =>
+    `【${ds}】${e.mood||''} ${e.weather||''}\n能量：${e.energy||'-'}\n標籤：${(e.tags||[]).join(' ')||'無'}\n🌿 感恩：${e.gratitude||'—'}\n\n${e.text}\n\n${'—'.repeat(20)}`
+  );
   const blob = new Blob([lines.join('\n\n')], {type:'text/plain;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = '心情日記_' + prefix.slice(0,7) + '.txt';
+  a.download = `心情日記_${range.start}_${range.end}.txt`;
   a.click();
   showToast('已匯出 TXT ✓');
 }
@@ -1174,28 +1224,10 @@ async function clearAll() {
 
 // ── Copy for Claude ──
 function copyForClaude() {
-  const range = document.getElementById('claudeRange').value;
-  const promptType = document.getElementById('claudePrompt').value;
-  const entries = getEntries();
-  const now = new Date();
-
-  // 篩選範圍
-  let filtered = Object.entries(entries);
-  if (range === 'week') {
-    const cutoff = new Date(now); cutoff.setDate(cutoff.getDate() - 7);
-    filtered = filtered.filter(([ds]) => ds >= toDateStr(cutoff));
-  } else if (range === 'month') {
-    const prefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-`;
-    filtered = filtered.filter(([ds]) => ds.startsWith(prefix));
-  } else if (range === '3month') {
-    const cutoff = new Date(now); cutoff.setMonth(cutoff.getMonth() - 3);
-    filtered = filtered.filter(([ds]) => ds >= toDateStr(cutoff));
-  }
-  filtered = filtered.sort((a,b) => a[0].localeCompare(b[0]));
-
+  const range = getExportRange(); if (!range) return;
+  const filtered = filterByRange(range.start, range.end);
   if (!filtered.length) { showToast('該範圍內沒有日記記錄'); return; }
 
-  // 組成提示語
   const prompts = {
     general: '請幫我綜合分析以下這段期間的心情日記，包括：\n1. 整體情緒狀態和趨勢\n2. 高頻出現的情緒和可能原因\n3. 能量值的變化規律\n4. 常出現的主題或關鍵詞\n5. 給我一些具體的反思建議',
     emotion: '請幫我分析以下心情日記的情緒模式：\n1. 哪些情緒最常出現？在什麼情況下出現？\n2. 情緒的高低點分別在哪幾天？\n3. 有沒有情緒觸發的規律（例如特定標籤對應特定情緒）？\n4. 給我察覺情緒的具體建議',
@@ -1203,7 +1235,6 @@ function copyForClaude() {
     growth: '請以成長和自我覺察的角度分析以下心情日記：\n1. 我在這段時間有什麼變化或成長？\n2. 我的感恩紀錄反映了什麼價值觀？\n3. 有沒有重複出現的困境或挑戰？\n4. 給我 3 個具體的成長方向建議'
   };
 
-  // 組成日記內容
   const diaryText = filtered.map(([ds, e]) => {
     const moodStr = e.mood || '—';
     const lines = [
@@ -1216,7 +1247,9 @@ function copyForClaude() {
     return lines.join('\n');
   }).join('\n\n---\n\n');
 
-  const fullText = `${prompts[promptType]}\n\n以下是我的心情日記（共 ${filtered.length} 筆，${filtered[0][0]} 至 ${filtered[filtered.length-1][0]}）：\n\n---\n\n${diaryText}`;
+  const promptType = document.getElementById('claudePrompt').value;
+
+  const fullText = `${prompts[promptType]}\n\n以下是我的心情日記（共 ${filtered.length} 筆，${range.start} 至 ${range.end}）：\n\n---\n\n${diaryText}`;
 
   navigator.clipboard.writeText(fullText).then(() => {
     const result = document.getElementById('claudeCopyResult');
