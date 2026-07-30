@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -587,6 +588,11 @@ body {
       <textarea class="diary-textarea" id="gratitudeText" placeholder="今天有什麼值得感謝的？哪怕很小也好⋯⋯" style="min-height:90px;"></textarea>
     </div>
 
+    <div class="content-section">
+      <div class="section-label">讓你微笑的小事</div>
+      <textarea class="diary-textarea" id="smileText" placeholder="今天有哪三件小事讓你微笑？可以很微小，一個眼神、一杯咖啡⋯⋯" style="min-height:90px;"></textarea>
+    </div>
+
     <button class="save-btn" onclick="saveEntry()">記錄這一天</button>
   </div>
 
@@ -605,8 +611,17 @@ body {
 
   <!-- Stats Page -->
   <div class="page" id="page-stats">
+    <div class="month-nav" style="gap:8px;">
+      <select id="statsYearSelect" onchange="onStatsDateChange()" style="border:1px solid var(--ink4);background:var(--paper);font-family:'Noto Serif TC',serif;font-size:0.85rem;padding:4px 8px;border-radius:var(--radius);color:var(--ink);"></select>
+      <select id="statsMonthSelect" onchange="onStatsDateChange()" style="border:1px solid var(--ink4);background:var(--paper);font-family:'Noto Serif TC',serif;font-size:0.85rem;padding:4px 8px;border-radius:var(--radius);color:var(--ink);">
+        <option value="0">一月</option><option value="1">二月</option><option value="2">三月</option>
+        <option value="3">四月</option><option value="4">五月</option><option value="5">六月</option>
+        <option value="6">七月</option><option value="7">八月</option><option value="8">九月</option>
+        <option value="9">十月</option><option value="10">十一月</option><option value="11">十二月</option>
+      </select>
+    </div>
+
     <div class="stats-section">
-      <div class="stats-title">本月統計</div>
       <div class="stat-cards" id="statCards"></div>
 
       <div class="section-label" style="margin-bottom:10px;">心情分布</div>
@@ -619,8 +634,10 @@ body {
     <hr class="divider">
 
     <div class="stats-section">
-      <div class="stats-title">每週回顧</div>
-      <div id="weeklyReview"></div>
+      <div class="stats-title">當月總結</div>
+      <div id="monthlySummaryDisplay"></div>
+      <textarea id="monthlySummaryInput" class="diary-textarea" placeholder="將 Claude 分析的結果貼在這裡，記錄本月的洞察與反思⋯⋯" style="min-height:120px;margin-top:8px;"></textarea>
+      <button class="save-btn" style="margin-top:8px;" onclick="saveMonthlySummary()">儲存總結</button>
     </div>
 
     <hr class="divider">
@@ -719,10 +736,12 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzJg5PyxdzMFZ9D3m1_Af2n
 
 // ── State ──
 let currentMood = []; // 複選
-let currentWeather = '';
+let currentWeather = []; // 複選
 let currentTags = [];
 let reviewYear = new Date().getFullYear();
 let reviewMonth = new Date().getMonth();
+let statsYear = new Date().getFullYear();
+let statsMonth = new Date().getMonth();
 let editingDate = null;
 let entriesCache = {}; // 本地快取，減少 API 呼叫
 
@@ -739,6 +758,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   showToast('載入中…');
   await loadAllEntries();
   renderCalendar();
+  initStatsDropdowns();
   renderStats();
 });
 
@@ -815,8 +835,13 @@ function selectMood(m) {
   document.querySelectorAll('.mood-btn').forEach(b => b.classList.toggle('selected', currentMood.includes(b.dataset.mood)));
 }
 function selectWeather(w) {
-  currentWeather = w;
-  document.querySelectorAll('.weather-btn').forEach(b => b.classList.toggle('selected', b.dataset.weather === w));
+  if (!Array.isArray(currentWeather)) currentWeather = currentWeather ? [currentWeather] : [];
+  if (currentWeather.includes(w)) {
+    currentWeather = currentWeather.filter(x => x !== w);
+  } else {
+    currentWeather.push(w);
+  }
+  document.querySelectorAll('.weather-btn').forEach(b => b.classList.toggle('selected', currentWeather.includes(b.dataset.weather)));
 }
 function addTag(tag) {
   if (!tag.startsWith('#')) tag = '#' + tag;
@@ -859,9 +884,10 @@ async function saveEntry() {
     date: dateStr,
     mood: currentMood.join(','), // 複選用逗號分隔存
     energy: parseInt(document.getElementById('energySlider').value),
-    weather: currentWeather,
+    weather: currentWeather.join(','),
     tags: [...currentTags],
     gratitude: document.getElementById('gratitudeText').value.trim(),
+    smile: document.getElementById('smileText').value.trim(),
     text: text,
     savedAt: new Date().toISOString()
   };
@@ -879,10 +905,11 @@ async function saveEntry() {
   }
 
   // reset
-  currentMood = []; currentWeather = ''; currentTags = [];
+  currentMood = []; currentWeather = []; currentTags = [];
   document.querySelectorAll('.mood-btn, .weather-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('diaryText').value = '';
   document.getElementById('gratitudeText').value = '';
+  document.getElementById('smileText').value = '';
   document.getElementById('energySlider').value = 50;
   updateEnergySlider(document.getElementById('energySlider'));
   updateCharCount();
@@ -965,6 +992,7 @@ function renderEntryCard(ds, e) {
     </div>
     ${tagsHtml?`<div class="entry-tags">${tagsHtml}</div>`:''}
     ${e.gratitude?`<div style="font-size:0.75rem;color:var(--green);margin-bottom:6px;line-height:1.6;border-left:2px solid var(--green);padding-left:8px;">🌿 ${e.gratitude.replace(/\n/g,'<br>')}</div>`:''}
+    ${e.smile?`<div style="font-size:0.75rem;color:var(--gold);margin-bottom:6px;line-height:1.6;border-left:2px solid var(--gold);padding-left:8px;">😊 ${e.smile.replace(/\n/g,'<br>')}</div>`:''}
     <div class="entry-text${short?' collapsed':''}" id="${id}">${e.text.replace(/\n/g,'<br>')}</div>
     ${short?`<button class="entry-action-btn" onclick="toggleExpand('${id}',this)" style="margin-top:4px;">展開 ▾</button>`:''}
     <div class="entry-actions">
@@ -988,13 +1016,16 @@ function editEntry(ds) {
   const moodArr = e.mood ? e.mood.split(',') : [];
   currentMood = moodArr;
   document.querySelectorAll('.mood-btn').forEach(b => b.classList.toggle('selected', currentMood.includes(b.dataset.mood)));
-  if (e.weather) selectWeather(e.weather);
+  if (e.weather) selectWeather(e.weather); // 舊單選相容
+  currentWeather = e.weather ? e.weather.split(',') : [];
+  document.querySelectorAll('.weather-btn').forEach(b => b.classList.toggle('selected', currentWeather.includes(b.dataset.weather)));
   document.getElementById('energySlider').value = e.energy || 50;
   updateEnergySlider(document.getElementById('energySlider'));
   currentTags = [...(e.tags||[])];
   renderSelectedTags();
   document.getElementById('diaryText').value = e.text;
   document.getElementById('gratitudeText').value = e.gratitude || '';
+  document.getElementById('smileText').value = e.smile || '';
   updateCharCount();
   document.getElementById('editingBadge').style.display = 'inline-block';
   editingDate = ds;
@@ -1016,14 +1047,34 @@ async function deleteEntry(ds) {
 }
 
 // ── Stats ──
+function initStatsDropdowns() {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const yearSelect = document.getElementById('statsYearSelect');
+  yearSelect.innerHTML = '';
+  for (let y = currentYear; y >= currentYear - 5; y--) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y + ' 年';
+    if (y === statsYear) opt.selected = true;
+    yearSelect.appendChild(opt);
+  }
+  document.getElementById('statsMonthSelect').value = statsMonth;
+}
+function onStatsDateChange() {
+  statsYear = parseInt(document.getElementById('statsYearSelect').value);
+  statsMonth = parseInt(document.getElementById('statsMonthSelect').value);
+  renderStats();
+}
+
 function renderStats() {
   const entries = getEntries();
-  const now = new Date();
-  const yr = now.getFullYear(), mo = now.getMonth();
+  const yr = statsYear, mo = statsMonth;
+  initStatsDropdowns();
+
   const prefix = `${yr}-${String(mo+1).padStart(2,'0')}-`;
   const monthEntries = Object.entries(entries).filter(([k]) => k.startsWith(prefix));
 
-  // Stat cards
   const totalDays = new Date(yr, mo+1, 0).getDate();
   const recorded = monthEntries.length;
   let totalEnergy = 0, moodCounts = {}, allTags = {};
@@ -1036,7 +1087,7 @@ function renderStats() {
   const topMood = Object.entries(moodCounts).sort((a,b)=>b[1]-a[1])[0];
 
   document.getElementById('statCards').innerHTML = `
-    <div class="stat-card"><div class="stat-card-num">${recorded}</div><div class="stat-card-label">本月記錄天數</div></div>
+    <div class="stat-card"><div class="stat-card-num">${recorded}</div><div class="stat-card-label">記錄天數</div></div>
     <div class="stat-card"><div class="stat-card-num">${Math.round(recorded/totalDays*100)}%</div><div class="stat-card-label">記錄率</div></div>
     <div class="stat-card"><div class="stat-card-num">${avgEnergy}</div><div class="stat-card-label">平均能量值</div></div>
     <div class="stat-card"><div class="stat-card-num">${topMood?topMood[0]:'—'}</div><div class="stat-card-label">最常出現心情</div></div>
@@ -1060,45 +1111,34 @@ function renderStats() {
     ? sortedTags.map(([t,c]) => `<span class="tag-cloud-item">${t} <span style="color:var(--ink3)">${c}</span></span>`).join('')
     : '<span style="color:var(--ink3);font-size:0.78rem;font-style:italic;">本月尚無標籤</span>';
 
-  // Weekly review
-  renderWeeklyReview(entries, yr, mo);
+  // 當月總結
+  const summaryKey = `summary_${yr}_${String(mo+1).padStart(2,'0')}`;
+  const existingSummary = entriesCache[summaryKey]?.text || '';
+  document.getElementById('monthlySummaryInput').value = existingSummary;
+  document.getElementById('monthlySummaryDisplay').innerHTML = existingSummary
+    ? `<div class="summary-block" style="margin-bottom:8px;">${existingSummary.replace(/\n/g,'<br>')}</div>`
+    : '<div style="font-size:0.78rem;color:var(--ink3);font-style:italic;margin-bottom:8px;">尚無當月總結</div>';
+
   renderMonthlyReview(entries);
 }
 
-function renderWeeklyReview(entries, yr, mo) {
-  const weeks = [];
-  const first = new Date(yr, mo, 1);
-  const last = new Date(yr, mo+1, 0);
-  let cur = new Date(first);
-  // align to Monday
-  const dow = cur.getDay();
-  if (dow !== 1) cur.setDate(cur.getDate() - (dow === 0 ? 6 : dow-1));
-
-  while (cur <= last) {
-    const wStart = new Date(cur);
-    const wEnd = new Date(cur); wEnd.setDate(wEnd.getDate()+6);
-    const wEntries = [];
-    for (let d = new Date(wStart); d <= wEnd; d.setDate(d.getDate()+1)) {
-      const ds = toDateStr(d);
-      if (entries[ds]) wEntries.push([ds, entries[ds]]);
-    }
-    if (wEntries.length) weeks.push({ start: wStart, end: wEnd, entries: wEntries });
-    cur.setDate(cur.getDate()+7);
+async function saveMonthlySummary() {
+  const text = document.getElementById('monthlySummaryInput').value.trim();
+  if (!text) { showToast('請輸入總結內容'); return; }
+  const summaryKey = `summary_${statsYear}_${String(statsMonth+1).padStart(2,'0')}`;
+  const entry = { date: summaryKey, type: 'monthly_summary', text, savedAt: new Date().toISOString() };
+  try {
+    await apiSave(entry);
+    entriesCache[summaryKey] = entry;
+    saveLocalCache();
+    showToast('當月總結已儲存 ✓');
+    renderStats();
+  } catch(err) {
+    entriesCache[summaryKey] = entry;
+    saveLocalCache();
+    showToast('⚠️ 離線儲存，稍後同步');
+    renderStats();
   }
-
-  const html = weeks.map(w => {
-    const moodList = w.entries.map(([,e]) => e.mood).filter(Boolean);
-    const avgEn = Math.round(w.entries.reduce((s,[,e])=>s+(e.energy||50),0)/w.entries.length);
-    const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
-    return `<div class="summary-block">
-      <div class="summary-period">${fmt(w.start)} — ${fmt(w.end)}　${w.entries.length} 筆記錄</div>
-      <div class="summary-mood-row">
-        <span class="summary-mood-label">心情：</span>${moodList.join(' ')}
-        <span class="summary-mood-label" style="margin-left:8px;">平均能量：</span><span style="font-size:0.78rem;color:var(--accent)">${avgEn}</span>
-      </div>
-    </div>`;
-  }).join('') || '<div class="empty-state"><div class="empty-icon">📖</div>本月尚無記錄</div>';
-  document.getElementById('weeklyReview').innerHTML = html;
 }
 
 function renderMonthlyReview(entries) {
@@ -1177,7 +1217,7 @@ function exportTXT() {
   const filtered = filterByRange(range.start, range.end);
   if (!filtered.length) { showToast('該範圍內沒有記錄'); return; }
   const lines = filtered.map(([ds, e]) =>
-    `【${ds}】${e.mood||''} ${e.weather||''}\n能量：${e.energy||'-'}\n標籤：${(e.tags||[]).join(' ')||'無'}\n🌿 感恩：${e.gratitude||'—'}\n\n${e.text}\n\n${'—'.repeat(20)}`
+    `【${ds}】${e.mood||''} ${e.weather||''}\n能量：${e.energy||'-'}\n標籤：${(e.tags||[]).join(' ')||'無'}\n🌿 感恩：${e.gratitude||'—'}\n😊 微笑小事：${e.smile||'—'}\n\n${e.text}\n\n${'—'.repeat(20)}`
   );
   const blob = new Blob([lines.join('\n\n')], {type:'text/plain;charset=utf-8'});
   const a = document.createElement('a');
@@ -1232,7 +1272,7 @@ function copyForClaude() {
     general: '請幫我綜合分析以下這段期間的心情日記，包括：\n1. 整體情緒狀態和趨勢\n2. 高頻出現的情緒和可能原因\n3. 能量值的變化規律\n4. 常出現的主題或關鍵詞\n5. 給我一些具體的反思建議',
     emotion: '請幫我分析以下心情日記的情緒模式：\n1. 哪些情緒最常出現？在什麼情況下出現？\n2. 情緒的高低點分別在哪幾天？\n3. 有沒有情緒觸發的規律（例如特定標籤對應特定情緒）？\n4. 給我察覺情緒的具體建議',
     energy: '請幫我分析以下心情日記的能量趨勢：\n1. 能量整體偏高還是偏低？\n2. 哪些日子能量特別高或低？和什麼有關？\n3. 能量和心情有沒有相關性？\n4. 給我提升能量的具體建議',
-    growth: '請以成長和自我覺察的角度分析以下心情日記：\n1. 我在這段時間有什麼變化或成長？\n2. 我的感恩紀錄反映了什麼價值觀？\n3. 有沒有重複出現的困境或挑戰？\n4. 給我 3 個具體的成長方向建議'
+    growth: '請以成長和自我覺察的角度分析以下心情日記，並在最後用以下格式輸出當月總結，方便我直接貼回日記：\n\n【當月總結】\n整體情緒：\n主要成長：\n待改善：\n下月關鍵字：\n\n分析問題：\n1. 我在這段時間有什麼變化或成長？\n2. 我的感恩紀錄和微笑小事反映了什麼價值觀？\n3. 有沒有重複出現的困境或挑戰？\n4. 給我 3 個具體的成長方向建議'
   };
 
   const diaryText = filtered.map(([ds, e]) => {
@@ -1243,6 +1283,7 @@ function copyForClaude() {
     ];
     if (e.tags && e.tags.length) lines.push(`標籤：${Array.isArray(e.tags) ? e.tags.join(' ') : e.tags}`);
     if (e.gratitude) lines.push(`🌿 感恩：${e.gratitude}`);
+    if (e.smile) lines.push(`😊 微笑小事：${e.smile}`);
     if (e.text) lines.push(`\n${e.text}`);
     return lines.join('\n');
   }).join('\n\n---\n\n');
