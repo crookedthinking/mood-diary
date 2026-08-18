@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -802,12 +803,21 @@ async function loadAllEntries() {
 
 // 正規化日期格式成 YYYY-MM-DD
 function normalizeDate(ds) {
-  // 已經是 YYYY-MM-DD
+  // 已經是純日期 YYYY-MM-DD（沒有時間／時區資訊）
   if (/^\d{4}-\d{2}-\d{2}$/.test(ds)) return ds;
-  // YYYY-M-D 或 YYYY/M/D 等格式
-  const m = ds.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  // 含時間／時區資訊的字串（例如 Google Sheets 回傳的 ISO 格式
+  // "2026-08-17T16:00:00.000Z" 或 Date.toString() 的 "Mon Aug 18 2026 00:00:00 GMT+0800..."）。
+  // 這種字串一定要透過 Date 物件解析、再用「本地時間」重組日期，
+  // 否則直接用文字擷取會抓到 UTC 的日期，造成跨時區時日期往前偏一天
+  // （這正是「8月的記錄同步後跑到7月」的原因）。
+  if (/T\d{2}:\d{2}|GMT|^[A-Za-z]{3}\s/.test(ds)) {
+    const d = new Date(ds);
+    if (!isNaN(d)) return toDateStr(d);
+  }
+  // YYYY-M-D 或 YYYY/M/D 等純日期格式（無時間部分）
+  const m = ds.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
   if (m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
-  // Date 物件格式（如 Mon Aug 01 2026...）
+  // 最後手段：交給 Date 物件解析
   const d = new Date(ds);
   if (!isNaN(d)) return toDateStr(d);
   return null;
