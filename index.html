@@ -993,7 +993,7 @@ function renderCalendar() {
     const isToday = ds === today;
     let cls = 'cal-cell';
     if (entry) {
-      const firstMood = entry.mood ? entry.mood.split(',')[0] : '';
+      const firstMood = entry.mood ? String(entry.mood).split(',')[0] : '';
       cls += ' has-entry mood-dot-' + firstMood;
     }
     if (isToday) cls += ' today';
@@ -1024,22 +1024,29 @@ function renderMonthEntries() {
   document.getElementById('reviewEntries').innerHTML = monthEntries.map(([ds, e]) => renderEntryCard(ds, e)).join('');
 }
 function renderEntryCard(ds, e) {
-  const tagsHtml = (e.tags||[]).map(t => `<span class="entry-tag">${t}</span>`).join('');
-  const short = e.text && e.text.length > 120;
+  // 後端（Google Sheets）回傳的欄位型別不一定穩定，統一先轉成字串再處理，
+  // 避免像 smile / gratitude / text 是數字、布林值等非字串型別時 .replace() 直接噴例外，
+  // 導致整段卡片列表（含其他天的記錄）都畫不出來。
+  const text = e.text != null ? String(e.text) : '';
+  const gratitude = e.gratitude != null ? String(e.gratitude) : '';
+  const smile = e.smile != null ? String(e.smile) : '';
+  const mood = e.mood != null ? String(e.mood) : '';
+  const tagsHtml = (Array.isArray(e.tags) ? e.tags : []).map(t => `<span class="entry-tag">${String(t)}</span>`).join('');
+  const short = text.length > 120;
   const id = 'et_' + ds.replace(/-/g,'');
   // mood 支援複選（逗號分隔）
-  const moodEmojis = e.mood ? e.mood.split(',').join(' ') : '';
+  const moodEmojis = mood ? mood.split(',').join(' ') : '';
   return `<div class="entry-card">
     <div class="entry-meta">
       <span class="entry-mood-badge" style="font-size:1.2rem;letter-spacing:2px;">${moodEmojis}</span>
       <span class="entry-date-str">${ds}</span>
       ${e.energy!==undefined?`<div class="entry-energy-bar"><div class="entry-energy-fill" style="width:${e.energy}%"></div></div>`:'' }
-      ${e.weather?`<span class="entry-weather">${e.weather}</span>`:''}
+      ${e.weather?`<span class="entry-weather">${String(e.weather)}</span>`:''}
     </div>
     ${tagsHtml?`<div class="entry-tags">${tagsHtml}</div>`:''}
-    ${e.gratitude?`<div style="font-size:0.75rem;color:var(--green);margin-bottom:6px;line-height:1.6;border-left:2px solid var(--green);padding-left:8px;">🌿 ${e.gratitude.replace(/\n/g,'<br>')}</div>`:''}
-    ${e.smile?`<div style="font-size:0.75rem;color:var(--gold);margin-bottom:6px;line-height:1.6;border-left:2px solid var(--gold);padding-left:8px;">😊 ${e.smile.replace(/\n/g,'<br>')}</div>`:''}
-    <div class="entry-text${short?' collapsed':''}" id="${id}">${e.text.replace(/\n/g,'<br>')}</div>
+    ${gratitude?`<div style="font-size:0.75rem;color:var(--green);margin-bottom:6px;line-height:1.6;border-left:2px solid var(--green);padding-left:8px;">🌿 ${gratitude.replace(/\n/g,'<br>')}</div>`:''}
+    ${smile?`<div style="font-size:0.75rem;color:var(--gold);margin-bottom:6px;line-height:1.6;border-left:2px solid var(--gold);padding-left:8px;">😊 ${smile.replace(/\n/g,'<br>')}</div>`:''}
+    <div class="entry-text${short?' collapsed':''}" id="${id}">${text.replace(/\n/g,'<br>')}</div>
     ${short?`<button class="entry-action-btn" onclick="toggleExpand('${id}',this)" style="margin-top:4px;">展開 ▾</button>`:''}
     <div class="entry-actions">
       <button class="entry-action-btn" onclick="editEntry('${ds}')">✎ 編輯</button>
@@ -1059,11 +1066,11 @@ function editEntry(ds) {
   switchPage('write');
   document.getElementById('writeDate').value = ds;
   // mood 載回陣列
-  const moodArr = e.mood ? e.mood.split(',') : [];
+  const moodArr = e.mood ? String(e.mood).split(',') : [];
   currentMood = moodArr;
   document.querySelectorAll('.mood-btn').forEach(b => b.classList.toggle('selected', currentMood.includes(b.dataset.mood)));
-  if (e.weather) selectWeather(e.weather); // 舊單選相容
-  currentWeather = e.weather ? e.weather.split(',') : [];
+  if (e.weather) selectWeather(String(e.weather)); // 舊單選相容
+  currentWeather = e.weather ? String(e.weather).split(',') : [];
   document.querySelectorAll('.weather-btn').forEach(b => b.classList.toggle('selected', currentWeather.includes(b.dataset.weather)));
   document.getElementById('energySlider').value = e.energy || 50;
   updateEnergySlider(document.getElementById('energySlider'));
@@ -1126,8 +1133,8 @@ function renderStats() {
   let totalEnergy = 0, moodCounts = {}, allTags = {};
   monthEntries.forEach(([_, e]) => {
     totalEnergy += e.energy || 50;
-    if (e.mood) e.mood.split(',').forEach(m => { moodCounts[m] = (moodCounts[m]||0)+1; });
-    (e.tags||[]).forEach(t => allTags[t] = (allTags[t]||0)+1);
+    if (e.mood) String(e.mood).split(',').forEach(m => { moodCounts[m] = (moodCounts[m]||0)+1; });
+    (Array.isArray(e.tags) ? e.tags : []).forEach(t => allTags[t] = (allTags[t]||0)+1);
   });
   const avgEnergy = recorded ? Math.round(totalEnergy/recorded) : 0;
   const topMood = Object.entries(moodCounts).sort((a,b)=>b[1]-a[1])[0];
@@ -1159,7 +1166,7 @@ function renderStats() {
 
   // 當月總結
   const summaryKey = `summary_${yr}_${String(mo+1).padStart(2,'0')}`;
-  const existingSummary = entriesCache[summaryKey]?.text || '';
+  const existingSummary = entriesCache[summaryKey]?.text != null ? String(entriesCache[summaryKey].text) : '';
   document.getElementById('monthlySummaryInput').value = existingSummary;
   document.getElementById('monthlySummaryDisplay').innerHTML = existingSummary
     ? `<div class="summary-block" style="margin-bottom:8px;">${existingSummary.replace(/\n/g,'<br>')}</div>`
@@ -1360,8 +1367,8 @@ function doSearch() {
   const entries = getEntries();
   const results = Object.entries(entries)
     .filter(([ds, e]) => {
-      return e.text.toLowerCase().includes(q) ||
-        (e.tags||[]).some(t => t.toLowerCase().includes(q)) ||
+      return String(e.text||'').toLowerCase().includes(q) ||
+        (Array.isArray(e.tags) ? e.tags : []).some(t => String(t).toLowerCase().includes(q)) ||
         ds.includes(q);
     })
     .sort((a,b) => b[0].localeCompare(a[0]))
