@@ -756,25 +756,61 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('exportStart').value = firstOfMonth;
   document.getElementById('exportEnd').value = toDateStr(now);
   showToast('載入中…');
-  await loadAllEntries();
+  // 先用本機快取渲染，不讓畫面卡住
+  try { entriesCache = JSON.parse(localStorage.getItem('moodDiary_cache') || '{}'); } catch(e) {}
   renderCalendar();
   initStatsDropdowns();
   renderStats();
+  // 背景同步 Google Sheets
+  loadAllEntries().then(() => {
+    renderCalendar();
+    renderStats();
+  });
 });
 
 // ── API ──
 async function loadAllEntries() {
+  // 先載入本機快取，讓畫面先顯示
+  try { entriesCache = JSON.parse(localStorage.getItem('moodDiary_cache') || '{}'); } catch(e) {}
+
+  // 設定 8 秒 timeout
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
   try {
-    const res = await fetch(API_URL + '?action=getAll');
+    const res = await fetch(API_URL + '?action=getAll', { signal: controller.signal });
+    clearTimeout(timeout);
     const data = await res.json();
+    // 正規化日期 key，確保都是 YYYY-MM-DD 格式
     entriesCache = {};
     (data.entries || []).forEach(e => {
-      if (e.date) entriesCache[e.date] = e;
+      if (!e.date) return;
+      const ds = normalizeDate(String(e.date));
+      if (ds) entriesCache[ds] = { ...e, date: ds };
     });
+    saveLocalCache();
+    showToast('資料已同步 ✓');
   } catch(err) {
-    showToast('⚠️ 無法連線，使用本機快取');
-    try { entriesCache = JSON.parse(localStorage.getItem('moodDiary_cache') || '{}'); } catch(e) {}
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') {
+      showToast('⚠️ 連線逾時，使用本機快取');
+    } else {
+      showToast('⚠️ 無法連線，使用本機快取');
+    }
   }
+}
+
+// 正規化日期格式成 YYYY-MM-DD
+function normalizeDate(ds) {
+  // 已經是 YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(ds)) return ds;
+  // YYYY-M-D 或 YYYY/M/D 等格式
+  const m = ds.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if (m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  // Date 物件格式（如 Mon Aug 01 2026...）
+  const d = new Date(ds);
+  if (!isNaN(d)) return toDateStr(d);
+  return null;
 }
 
 async function apiSave(entry) {
